@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkRequiredFields = (form) => {
         const requiredElements = form.querySelectorAll('[required], [aria-required="true"], [required="true"]');
 
+        // Laat ff staan voor debugging
         console.log('Required elements:', requiredElements);
 
         for (const element of requiredElements) {
@@ -144,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!checkRequiredFields(form)) {
                     return;
                 }
-                console.log(form);
 
                 if (!mappedData.name || typeof mappedData.name !== 'string') {
                     throw new Error('Invalid name');

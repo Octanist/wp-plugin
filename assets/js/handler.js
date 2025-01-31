@@ -59,10 +59,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const checkRequiredFields = (form) => {
-        const requiredElements = form.querySelectorAll('[required]');
+        const requiredElements = form.querySelectorAll('[required], [aria-required="true"], [required="true"]');
+
+        console.log('Required elements:', requiredElements);
 
         for (const element of requiredElements) {
-            if (!element.value.trim()) {  // Check if the field has a value (non-empty)
+            if (!element.value.trim()) {
+
                 console.error(`Missing required field: ${element.name || element.id}`);
                 return false;
             }
@@ -138,11 +141,10 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 mappedData = mapFormFields(form, fieldMappings);
 
-                // DIT FIXEN WERKT NOG NIET OPTIMAAL
                 if (!checkRequiredFields(form)) {
-                    alert('Please fill in all required fields.');
                     return;
                 }
+                console.log(form);
 
                 if (!mappedData.name || typeof mappedData.name !== 'string') {
                     throw new Error('Invalid name');
@@ -151,9 +153,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('Invalid email:', mappedData.email);
                     throw new Error('Invalid email');
                 }
-                if (!mappedData.phone || !validatePhone(mappedData.phone)) {
-                    throw new Error('Invalid phone');
-                }
+                // if (!mappedData.phone || !validatePhone(mappedData.phone)) {
+                //     throw new Error('Invalid phone');
+                // }
 
                 mappedData.cookies = cookies;
 
@@ -178,7 +180,7 @@ function validateEmail(email) {
     return re.test(String(email).toLowerCase());
 }
 
-function validatePhone(phone) {
-    const re = /^\+?[1-9]\d{1,14}$/;
-    return re.test(String(phone));
-}
+// function validatePhone(phone) {
+//     const re = /^\+?[1-9]\d{1,14}$/;
+//     return re.test(String(phone));
+// }

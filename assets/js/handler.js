@@ -158,6 +158,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 // }
 
                 mappedData.cookies = cookies;
+                mappedData.domain = window.location.hostname;
+                mappedData.path = window.location.pathname;
 
             } catch (error) {
                 console.error('Error mapping form fields:', error);

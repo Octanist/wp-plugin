@@ -20,7 +20,8 @@ add_action('wp_enqueue_scripts', function () {
 });
 
 add_action('admin_menu', 'ofh_add_admin_menu');
-function ofh_add_admin_menu() {
+function ofh_add_admin_menu()
+{
     $icon_url = OFH_URL . 'assets/image.png';
 
     add_menu_page(
@@ -34,7 +35,8 @@ function ofh_add_admin_menu() {
     );
 }
 
-function ofh_render_settings_page() {
+function ofh_render_settings_page()
+{
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         check_admin_referer('save_octanist_settings');
 
@@ -58,7 +60,7 @@ function ofh_render_settings_page() {
         'phone' => '',
         'custom' => '',
     ]);
-    
+
     ?>
     <div class="wrap">
         <h1>Octanist Settings</h1>
@@ -68,31 +70,36 @@ function ofh_render_settings_page() {
                 <tr>
                     <th><label for="octanist_id">Octanist ID:</label></th>
                     <td>
-                        <input type="text" id="octanist_id" name="octanist_id" value="<?php echo esc_attr($octanist_id ?? ''); ?>" class="regular-text">
+                        <input type="text" id="octanist_id" name="octanist_id"
+                            value="<?php echo esc_attr($octanist_id ?? ''); ?>" class="regular-text">
                     </td>
                 </tr>
                 <tr>
                     <th><label for="field_mapping_name">Name field:</label></th>
                     <td>
-                        <input type="text" id="field_mapping_name" name="field_mapping_name" value="<?php echo esc_attr($field_mappings['name'] ?? ''); ?>" class="regular-text">
+                        <input type="text" id="field_mapping_name" name="field_mapping_name"
+                            value="<?php echo esc_attr($field_mappings['name'] ?? ''); ?>" class="regular-text">
                     </td>
                 </tr>
                 <tr>
                     <th><label for="field_mapping_email">Email field:</label></th>
                     <td>
-                        <input type="text" id="field_mapping_email" name="field_mapping_email" value="<?php echo esc_attr($field_mappings['email'] ?? ''); ?>" class="regular-text">
+                        <input type="text" id="field_mapping_email" name="field_mapping_email"
+                            value="<?php echo esc_attr($field_mappings['email'] ?? ''); ?>" class="regular-text">
                     </td>
                 </tr>
                 <tr>
                     <th><label for="field_mapping_phone">Phone field:</label></th>
                     <td>
-                        <input type="text" id="field_mapping_phone" name="field_mapping_phone" value="<?php echo esc_attr($field_mappings['phone'] ?? ''); ?>" class="regular-text">
+                        <input type="text" id="field_mapping_phone" name="field_mapping_phone"
+                            value="<?php echo esc_attr($field_mappings['phone'] ?? ''); ?>" class="regular-text">
                     </td>
                 </tr>
                 <tr>
                     <th><label for="field_mapping_custom">Custom field:</label></th>
                     <td>
-                        <input type="text" id="field_mapping_custom" name="field_mapping_custom" value="<?php echo esc_attr($field_mappings['custom'] ?? ''); ?>" class="regular-text">
+                        <input type="text" id="field_mapping_custom" name="field_mapping_custom"
+                            value="<?php echo esc_attr($field_mappings['custom'] ?? ''); ?>" class="regular-text">
                     </td>
                 </tr>
             </table>

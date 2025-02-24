@@ -161,19 +161,21 @@ document.addEventListener('DOMContentLoaded', () => {
             appendOctanistIdToForm(form);
 
             let mappedData;
+
             try {
                 mappedData = mapFormFields(form, fieldMappings);
+
+                console.log('Mapped data:', mappedData);    
 
                 if (!checkRequiredFields(form)) {
                     return;
                 }
 
                 if (!mappedData.name || typeof mappedData.name !== 'string') {
-                    throw new Error('Invalid name');
+                    mappedData.name = '';
                 }
                 if (!mappedData.email || !validateEmail(mappedData.email)) {
-                    console.log('Invalid email:', mappedData.email);
-                    throw new Error('Invalid email');
+                    mappedData.email = '';
                 }
                 // if (!mappedData.phone || !validatePhone(mappedData.phone)) {
                 //     throw new Error('Invalid phone');

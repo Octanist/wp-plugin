@@ -26,6 +26,8 @@ function ofh_activate_plugin() {
     if (!get_option('octanist_id')) {
         add_option('octanist_id', '');
         add_option('octanist_field_mappings', []);
+        add_option('octanist_send_to_endpoint', '1');
+        add_option('octanist_send_to_datalayer', '0');
     }
 }
 
@@ -33,4 +35,6 @@ register_deactivation_hook(__FILE__, 'ofh_deactivate_plugin');
 function ofh_deactivate_plugin() {
     delete_option('octanist_id');
     delete_option('octanist_field_mappings');
+    delete_option('octanist_send_to_endpoint');
+    delete_option('octanist_send_to_datalayer');
 }

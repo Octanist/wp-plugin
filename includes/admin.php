@@ -16,6 +16,8 @@ add_action('wp_enqueue_scripts', function () {
     wp_localize_script('octanist-cookie-handler', 'octanistSettings', [
         'octanistID' => get_option('octanist_id', ''),
         'fieldMappings' => $field_mappings,
+        'sendToOctanist' => get_option('octanist_send_to_endpoint', '1') === '1',
+        'sendToDataLayer' => get_option('octanist_send_to_datalayer', '0') === '1',
     ]);
 });
 
@@ -42,6 +44,12 @@ function ofh_render_settings_page()
 
         update_option('octanist_id', sanitize_text_field($_POST['octanist_id']));
 
+        $sendToOctanist = isset($_POST['octanist_send_to_endpoint']) ? '1' : '0';
+        $sendToDataLayer = isset($_POST['octanist_send_to_datalayer']) ? '1' : '0';
+
+        update_option('octanist_send_to_endpoint', $sendToOctanist);
+        update_option('octanist_send_to_datalayer', $sendToDataLayer);
+
         $field_mappings = [
             'name' => sanitize_text_field($_POST['field_mapping_name']),
             'email' => sanitize_text_field($_POST['field_mapping_email']),
@@ -60,6 +68,9 @@ function ofh_render_settings_page()
         'phone' => '',
         'custom' => '',
     ]);
+
+    $sendToOctanist = get_option('octanist_send_to_endpoint', '0') === '1';
+    $sendToDataLayer = get_option('octanist_send_to_datalayer', '0') === '1';
 
     ?>
     <div class="wrap">
@@ -100,6 +111,19 @@ function ofh_render_settings_page()
                     <td>
                         <input type="text" id="field_mapping_custom" name="field_mapping_custom"
                             value="<?php echo esc_attr($field_mappings['custom'] ?? ''); ?>" class="regular-text">
+                    </td>
+                </tr>
+                <tr><td></td></tr>
+                <tr>
+                    <th><label for="octanist_send_to_endpoint">Send data to octanist:</label></th>
+                    <td>
+                        <input type="checkbox" id="octanist_send_to_endpoint" name="octanist_send_to_endpoint" value="1" <?php checked($sendToOctanist); ?>>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label for="octanist_send_to_datalayer">Send data to (GTM) datalayer:</label></th>
+                    <td>
+                        <input type="checkbox" id="octanist_send_to_datalayer" name="octanist_send_to_datalayer" value="1" <?php checked($sendToDataLayer); ?>>
                     </td>
                 </tr>
             </table>

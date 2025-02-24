@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Octanist handler.js loaded');
 
+    // var dataLayer = dataLayer || [];
+
     const getCookies = () => {
         const cookies = {};
         document.cookie.split(';').forEach(cookie => {
@@ -103,7 +105,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const formsWithFormClass = Array.from(document.querySelectorAll('form.wpcf7-form, .wpcf7-form, .octanist-form, .frm-fluent-form'));
+    const sendToDataLayer = (data) => {
+        console.log('Sending data to dataLayer:', data);
+
+        try {
+            dataLayer.push({
+                event: "submit_lead_form",
+                user_data: {
+                    email: data.email,
+                    phone_number: data.phone,
+                    company_name: data.name, // optional
+                    custom: data.custom
+                },
+            });
+
+            console.log(dataLayer);
+        } catch (error) {
+            console.error('Error sending data to dataLayer:', error);
+        }
+    }
+
+    const formsWithFormClass = Array.from(document.querySelectorAll('form.wpcf7-form, .wpcf7-form, .octanist-form, .frm-fluent-form, #lf_form_container form, .elementor-form, .wpforms-form'));
 
     const allForms = [
         ...formsWithFormClass
@@ -169,7 +191,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Verzamelde data:', mappedData);
 
             try {
-                sendDataToEndpoint(mappedData);
+                if (typeof octanistSettings !== 'undefined' && octanistSettings.sendToOctanist === '1') {
+                    sendDataToEndpoint(mappedData);
+                }
+                if (typeof octanistSettings !== 'undefined' && octanistSettings.sendToDataLayer === '1') {
+                    sendToDataLayer(mappedData);
+                }
             } catch (error) {
                 console.error('Error sending data to endpoint:', error);
             }

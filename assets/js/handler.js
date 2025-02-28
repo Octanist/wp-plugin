@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const formsWithFormClass = Array.from(
     document.querySelectorAll(
-      "form.wpcf7-form, .wpcf7-form, .octanist-form, .frm-fluent-form, #lf_form_container form, .elementor-form, .wpforms-form, .forminator-ui, .frm-show-form"
+      "form.wpcf7-form, .wpcf7-form, .octanist-form, .frm-fluent-form, #lf_form_container form, .elementor-form, .wpforms-form, .forminator-ui, .frm-show-form, .nf-form-layout > form"
     )
   );
 

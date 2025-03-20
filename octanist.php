@@ -22,7 +22,8 @@ require_once OFH_PATH . 'includes/admin.php';
 require_once OFH_PATH . 'assets/styles.php';
 
 register_activation_hook(__FILE__, 'ofh_activate_plugin');
-function ofh_activate_plugin() {
+function ofh_activate_plugin()
+{
     if (!get_option('octanist_id')) {
         add_option('octanist_id', '');
         add_option('octanist_field_mappings', []);
@@ -32,7 +33,8 @@ function ofh_activate_plugin() {
 }
 
 register_deactivation_hook(__FILE__, 'ofh_deactivate_plugin');
-function ofh_deactivate_plugin() {
+function ofh_deactivate_plugin()
+{
     delete_option('octanist_id');
     delete_option('octanist_field_mappings');
     delete_option('octanist_send_to_endpoint');

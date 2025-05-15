@@ -220,6 +220,8 @@ document.addEventListener("DOMContentLoaded", () => {
             } catch (error) {
                 console.error("Error sending data to endpoint:", error);
             }
+
+            form.submit();
         });
     });
 });

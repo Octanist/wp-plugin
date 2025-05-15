@@ -113,17 +113,21 @@ function ofh_render_settings_page()
                             value="<?php echo esc_attr($field_mappings['custom'] ?? ''); ?>" class="regular-text">
                     </td>
                 </tr>
-                <tr><td></td></tr>
+                <tr>
+                    <td></td>
+                </tr>
                 <tr>
                     <th><label for="octanist_send_to_endpoint">Send data to octanist:</label></th>
                     <td>
-                        <input type="checkbox" id="octanist_send_to_endpoint" name="octanist_send_to_endpoint" value="1" <?php checked($sendToOctanist); ?>>
+                        <input type="checkbox" id="octanist_send_to_endpoint" name="octanist_send_to_endpoint" value="1"
+                            <?php checked($sendToOctanist); ?>>
                     </td>
                 </tr>
                 <tr>
                     <th><label for="octanist_send_to_datalayer">Send data to (GTM) datalayer:</label></th>
                     <td>
-                        <input type="checkbox" id="octanist_send_to_datalayer" name="octanist_send_to_datalayer" value="1" <?php checked($sendToDataLayer); ?>>
+                        <input type="checkbox" id="octanist_send_to_datalayer" name="octanist_send_to_datalayer" value="1"
+                            <?php checked($sendToDataLayer); ?>>
                     </td>
                 </tr>
             </table>

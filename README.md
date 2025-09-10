@@ -3,12 +3,12 @@
 **Contributors:** octanist  
 **Tags:** tracking, forms, leads, conversions, analytics  
 **Requires at least:** 6.0  
-**Tested up to:** 6.5  
+**Tested up to:** 6.8  
 **Stable tag:** 2.0.0  
 **License:** GPLv2 or later  
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
-Unlock the power of offline conversion tracking. The Octanist plugin seamlessly connects your WordPress forms to the Octanist platform, giving you a clear view of which marketing efforts turn into actual customers.
+Connect your WordPress forms to the Octanist platform for powerful, seamless offline conversion tracking. See which campaigns deliver real customers.
 
 ---
 

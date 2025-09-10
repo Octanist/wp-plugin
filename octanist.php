@@ -1,14 +1,15 @@
 <?php
 /**
  * Plugin Name:         Octanist
- * Description:         Offline conversion tracking made easy. Our platform seamlessly gathers all your website leads, including form submissions, into one centralized dashboard.
+ * Description:         Connect your WordPress forms to the Octanist platform for powerful, seamless offline conversion tracking.
  * Version:             2.0.0
  * Author:              Octanist
  * Author URI:          https://www.octanist.com/
  * Text Domain:         octanist
- * License:             GPL v2 or later
+ * License:             GPLv2 or later
  * License URI:         https://www.gnu.org/licenses/gpl-2.0.html
  * Requires at least:   6.0
+ * Tested up to:        6.8
  */
 
 if (!defined('ABSPATH')) {

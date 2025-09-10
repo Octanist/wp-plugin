@@ -187,8 +187,8 @@ class Octanist_Admin
 
     public function render_field_id()
     {
-        $value = isset($this->options['octanist_id']) ? esc_attr($this->options['octanist_id']) : '';
-        echo '<input type="text" id="octanist_id" name="octanist_settings[octanist_id]" value="' . $value . '" class="regular-text">';
+        $value = isset($this->options['octanist_id']) ? $this->options['octanist_id'] : '';
+        echo '<input type="text" id="octanist_id" name="octanist_settings[octanist_id]" value="' . esc_attr($value) . '" class="regular-text">';
     }
 
     public function render_mappings_section_text()
@@ -217,7 +217,7 @@ class Octanist_Admin
         $name = $args['name'];
         $default = $args['default'];
         $checked = isset($this->options[$name]) ? $this->options[$name] : $default;
-        echo '<input type="checkbox" name="octanist_settings[' . $name . ']" value="1" ' . checked('1', $checked, false) . '>';
+        echo '<input type="checkbox" name="octanist_settings[' . esc_attr($name) . ']" value="1" ' . checked('1', $checked, false) . '>';
         if ($name === 'debug_mode') {
             echo '<p class="description">Enable to log detailed diagnostic information to the browser console.</p>';
         }

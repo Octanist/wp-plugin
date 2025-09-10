@@ -193,8 +193,10 @@ class Octanist_Admin
 
     public function render_mappings_section_text()
     {
+        echo '<div class="octanist-alert-info">';
         echo '<p>Enter all possible form field names for each standard Octanist property. For example, your "Name" field might be called "name", "your-name", or "full_name" in different forms.</p>';
         echo '<p><strong>Note:</strong> If a form contains multiple fields that map to the same property (e.g., separate "First Name" and "Last Name" fields both mapped to "Name"), their values will be combined with a pipe symbol ( | ).</p>';
+        echo '</div>';
     }
     
     public function render_mapping_fields($args)

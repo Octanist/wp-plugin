@@ -101,6 +101,10 @@
   color: #1e293b;
 }
 
+#octanist-settings-page .add-mapping-field {
+  margin-top: 12px;
+}
+
 #octanist-settings-page .remove-mapping-field {
   margin-left: 8px;
   padding: 0 10px;
@@ -127,4 +131,27 @@
 #octanist-settings-page p.description {
   font-size: 13px;
   color: #64748b;
+}
+
+/* Alert Box for descriptions */
+.octanist-alert-info {
+  background-color: #f8fafc; /* A very light gray */
+  border-left: 4px solid #94a3b8; /* A neutral, soft blue-gray */
+  padding: 15px 20px;
+  margin: 0 24px 20px 24px; /* Placed inside the card */
+  border-radius: 6px;
+}
+
+.octanist-alert-info p {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #475569; /* Darker text for readability */
+}
+
+.octanist-alert-info p:last-child {
+  margin-bottom: 0;
+}
+
+.octanist-alert-info strong {
+  color: #1e293b;
 }

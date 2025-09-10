@@ -29,6 +29,7 @@ function ofh_activate_plugin()
         add_option('octanist_field_mappings', []);
         add_option('octanist_send_to_endpoint', '1');
         add_option('octanist_send_to_datalayer', '0');
+        add_option('octanist_submission_mode', 'ajax');
     }
 }
 
@@ -39,4 +40,5 @@ function ofh_deactivate_plugin()
     delete_option('octanist_field_mappings');
     delete_option('octanist_send_to_endpoint');
     delete_option('octanist_send_to_datalayer');
+    delete_option('octanist_submission_mode');
 }

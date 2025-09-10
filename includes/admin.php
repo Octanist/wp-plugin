@@ -4,20 +4,24 @@ if (!defined('ABSPATH')) {
 }
 
 add_action('wp_enqueue_scripts', function () {
+    $submission_mode = get_option('octanist_submission_mode', 'ajax');
+    $handler_script = ($submission_mode === 'standard') ? 'handler-standard.js' : 'handler-ajax.js';
+    $script_handle = 'octanist-handler-' . $submission_mode;
+
     wp_enqueue_script(
-        'octanist-cookie-handler',
-        plugin_dir_url(__FILE__) . '../assets/js/handler.js',
+        $script_handle,
+        plugin_dir_url(__FILE__) . '../assets/js/' . $handler_script,
         [],
-        '1.0',
+        '1.0.1', // Version bump
         true
     );
 
     $field_mappings = get_option('octanist_field_mappings', []);
-    wp_localize_script('octanist-cookie-handler', 'octanistSettings', [
+    wp_localize_script($script_handle, 'octanistSettings', [
         'octanistID' => get_option('octanist_id', ''),
         'fieldMappings' => $field_mappings,
-        'sendToOctanist' => get_option('octanist_send_to_endpoint', '1') === '1',
-        'sendToDataLayer' => get_option('octanist_send_to_datalayer', '0') === '1',
+        'sendToOctanist' => get_option('octanist_send_to_endpoint', '1'),
+        'sendToDataLayer' => get_option('octanist_send_to_datalayer', '0'),
     ]);
 });
 
@@ -46,9 +50,11 @@ function ofh_render_settings_page()
 
         $sendToOctanist = isset($_POST['octanist_send_to_endpoint']) ? '1' : '0';
         $sendToDataLayer = isset($_POST['octanist_send_to_datalayer']) ? '1' : '0';
+        $submission_mode = sanitize_text_field($_POST['octanist_submission_mode'] ?? 'ajax');
 
         update_option('octanist_send_to_endpoint', $sendToOctanist);
         update_option('octanist_send_to_datalayer', $sendToDataLayer);
+        update_option('octanist_submission_mode', $submission_mode);
 
         $field_mappings = [
             'name' => sanitize_text_field($_POST['field_mapping_name']),
@@ -71,6 +77,7 @@ function ofh_render_settings_page()
 
     $sendToOctanist = get_option('octanist_send_to_endpoint', '0') === '1';
     $sendToDataLayer = get_option('octanist_send_to_datalayer', '0') === '1';
+    $submission_mode = get_option('octanist_submission_mode', 'ajax');
 
     ?>
     <div class="wrap">
@@ -128,6 +135,22 @@ function ofh_render_settings_page()
                     <td>
                         <input type="checkbox" id="octanist_send_to_datalayer" name="octanist_send_to_datalayer" value="1"
                             <?php checked($sendToDataLayer); ?>>
+                    </td>
+                </tr>
+                <tr>
+                    <th><label>Form Submission Mode:</label></th>
+                    <td>
+                        <fieldset>
+                            <label>
+                                <input type="radio" name="octanist_submission_mode" value="ajax" <?php checked($submission_mode, 'ajax'); ?>>
+                                <span>AJAX (Default - For most form plugins)</span>
+                            </label>
+                            <br>
+                            <label>
+                                <input type="radio" name="octanist_submission_mode" value="standard" <?php checked($submission_mode, 'standard'); ?>>
+                                <span>Standard (non-AJAX forms)</span>
+                            </label>
+                        </fieldset>
                     </td>
                 </tr>
             </table>

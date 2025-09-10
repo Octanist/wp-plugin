@@ -16,23 +16,28 @@ class Octanist_Admin
 
     public function add_admin_menu()
     {
-        add_menu_page(
-            'Octanist',
-            'Octanist',
-            'manage_options',
-            'octanist-settings',
-            [$this, 'render_settings_page'],
-            OFH_URL . 'assets/image.png',
-            2
+        // Add a submenu page under the main "Settings" menu
+        add_options_page(
+            'Octanist Settings', // The title displayed in the browser tab
+            'Octanist',          // The text for the menu item
+            'manage_options',    // The capability required to see this item
+            'octanist-settings', // The slug for the page
+            [$this, 'render_settings_page'] // The function to render the page
         );
     }
 
     public function enqueue_admin_scripts($hook)
     {
-        // Only load on our settings page
-        if ($hook !== 'toplevel_page_octanist-settings') {
+        // The hook for a settings submenu page is 'settings_page_{menu_slug}'
+        if ($hook !== 'settings_page_octanist-settings') {
             return;
         }
+        wp_enqueue_style(
+            'octanist-admin-css',
+            OFH_URL . 'assets/css/admin-styles.css',
+            [],
+            '1.1.0'
+        );
         wp_enqueue_script(
             'octanist-admin-js',
             OFH_URL . 'assets/js/admin.js',
@@ -46,12 +51,45 @@ class Octanist_Admin
     {
         $this->options = get_option('octanist_settings');
         ?>
-        <div class="wrap">
-            <h1>Octanist Settings</h1>
+        <div class="wrap" id="octanist-settings-page">
+            <div class="octanist-header">
+                <img src="<?php echo esc_url(OFH_URL . 'assets/icon.svg'); ?>" alt="Octanist Logo">
+                <h1>Octanist Settings</h1>
+            </div>
             <form method="POST" action="options.php">
                 <?php
                 settings_fields('octanist_settings_group');
-                do_settings_sections('octanist-settings-page');
+
+                // We'll render sections manually to wrap them in cards
+                global $wp_settings_sections, $wp_settings_fields;
+
+                $page = 'octanist-settings-page';
+
+                if (!isset($wp_settings_sections[$page])) {
+                    return;
+                }
+
+                foreach ((array) $wp_settings_sections[$page] as $section) {
+                    echo '<div class="octanist-card">';
+                    if ($section['title']) {
+                        echo "<h2>" . esc_html($section['title']) . "</h2>";
+                    }
+
+                    if ($section['callback']) {
+                        call_user_func($section['callback'], $section);
+                    }
+
+                    if (!isset($wp_settings_fields) || !isset($wp_settings_fields[$page]) || !isset($wp_settings_fields[$page][$section['id']])) {
+                        continue;
+                    }
+                    
+                    echo '<table class="form-table">';
+                    do_settings_fields($page, $section['id']);
+                    echo '</table>';
+                    
+                    echo '</div>'; // close .octanist-card
+                }
+                
                 submit_button();
                 ?>
             </form>
@@ -164,12 +202,12 @@ class Octanist_Admin
         $field = $args['field'];
         $mappings = isset($this->options['field_mappings'][$field]) ? $this->options['field_mappings'][$field] : [''];
         
-        echo '<div id="mapping-wrapper-' . $field . '">';
+        echo '<div class="mapping-field-wrapper" id="mapping-wrapper-' . esc_attr($field) . '">';
         foreach ($mappings as $index => $value) {
-            echo '<div><input type="text" name="octanist_settings[field_mappings][' . $field . '][]" value="' . esc_attr($value) . '" class="regular-text" /> <button type="button" class="button remove-mapping-field">-</button></div>';
+            echo '<div><input type="text" name="octanist_settings[field_mappings][' . esc_attr($field) . '][]" value="' . esc_attr($value) . '" class="regular-text" /> <button type="button" class="button remove-mapping-field">-</button></div>';
         }
         echo '</div>';
-        echo '<button type="button" class="button add-mapping-field" data-field="' . $field . '">+ Add Field</button>';
+        echo '<button type="button" class="button add-mapping-field" data-field="' . esc_attr($field) . '">+ Add Field</button>';
     }
 
     public function render_field_checkbox($args)

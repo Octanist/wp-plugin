@@ -1,0 +1,157 @@
+/* Octanist Admin Styles - ShadCN Inspired */
+
+/* Overall Page Container */
+#octanist-settings-page {
+  max-width: 800px;
+}
+
+/* Header */
+.octanist-header {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.octanist-header img {
+  width: 48px;
+  height: 48px;
+}
+.octanist-header h1 {
+  padding-bottom: 0;
+  margin: 0;
+}
+
+/* Card styling for each settings section */
+.octanist-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.octanist-card h2 {
+  font-size: 18px;
+  padding: 16px 24px;
+  margin: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+.octanist-card .form-table {
+  margin: 0;
+}
+.octanist-card .form-table th,
+.octanist-card .form-table td {
+  padding: 20px 24px;
+}
+.octanist-card .form-table tr:last-child th,
+.octanist-card .form-table tr:last-child td {
+  border-bottom: 0;
+}
+
+/* Input Fields */
+#octanist-settings-page input[type="text"],
+#octanist-settings-page input[type="number"],
+#octanist-settings-page select {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 12px;
+  box-shadow: none;
+}
+#octanist-settings-page input[type="text"]:focus,
+#octanist-settings-page input[type="number"]:focus,
+#octanist-settings-page select:focus {
+  border-color: #3f6967;
+  box-shadow: 0 0 0 1px #3f6967;
+  outline: none;
+}
+
+/* Checkbox & Radio */
+#octanist-settings-page input[type="radio"],
+#octanist-settings-page input[type="checkbox"] {
+  border-radius: 4px;
+}
+
+/* Buttons */
+#octanist-settings-page .button-primary {
+  background: #3f6967;
+  border-color: #3f6967;
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-weight: 500;
+  height: auto;
+  transition: background-color 0.15s ease-in-out;
+}
+#octanist-settings-page .button-primary:hover {
+  background: #335755; /* Darker shade of brand color */
+  border-color: #335755;
+}
+
+#octanist-settings-page .add-mapping-field,
+#octanist-settings-page .remove-mapping-field {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  border-radius: 6px;
+  transition: all 0.15s ease-in-out;
+}
+#octanist-settings-page .add-mapping-field:hover,
+#octanist-settings-page .remove-mapping-field:hover {
+  background: #e2e8f0;
+  border-color: #94a3b8;
+  color: #1e293b;
+}
+
+#octanist-settings-page .add-mapping-field {
+  margin-top: 12px;
+}
+
+#octanist-settings-page .remove-mapping-field {
+  margin-left: 8px;
+  padding: 0 10px;
+}
+#octanist-settings-page .mapping-field-wrapper > div {
+  margin-bottom: 8px;
+}
+#octanist-settings-page .mapping-field-wrapper > div:last-child {
+  margin-bottom: 0;
+}
+
+/* Fieldset (for radios) */
+#octanist-settings-page fieldset {
+  padding: 0;
+  border: 0;
+}
+#octanist-settings-page fieldset label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Descriptions */
+#octanist-settings-page p.description {
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Alert Box for descriptions */
+.octanist-alert-info {
+  background-color: #f8fafc; /* A very light gray */
+  border-left: 4px solid #94a3b8; /* A neutral, soft blue-gray */
+  padding: 15px 20px;
+  margin: 0 24px 20px 24px; /* Placed inside the card */
+  border-radius: 6px;
+}
+
+.octanist-alert-info p {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  color: #475569; /* Darker text for readability */
+}
+
+.octanist-alert-info p:last-child {
+  margin-bottom: 0;
+}
+
+.octanist-alert-info strong {
+  color: #1e293b;
+}

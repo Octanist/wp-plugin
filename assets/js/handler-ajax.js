@@ -1,19 +1,32 @@
 document.addEventListener("DOMContentLoaded", () => {
   const octanistAjaxFormHandler = {
     init() {
-      console.log("Octanist AJAX handler.js loaded");
-
       this.settings = this.getSettings();
       if (!this.settings) {
-        console.error("Octanist settings not found.");
+        this.log("Octanist settings not found.", "error");
         return;
       }
+
+      this.log("Octanist AJAX handler.js loaded");
 
       this.cookies = this.getCookies();
       this.fieldMappings = this.processFieldMappings(
         this.settings.fieldMappings
       );
       this.bindForms();
+    },
+
+    log(message, type = "log") {
+      if (this.settings.debugMode !== "1") return;
+
+      const prefix = "Octanist Debug:";
+      if (type === "error") {
+        console.error(prefix, message);
+      } else if (type === "warn") {
+        console.warn(prefix, message);
+      } else {
+        console.log(prefix, message);
+      }
     },
 
     getSettings() {
@@ -33,14 +46,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
     processFieldMappings(mappings) {
       if (typeof mappings !== "object" || mappings === null) {
+        this.log("Field mappings are not an object:", "warn");
         return {};
       }
       const processedMappings = {};
-      Object.keys(mappings).forEach((key) => {
-        const values = mappings[key].split(",").map((item) => item.trim());
-        values.forEach((value) => {
-          processedMappings[value] = key;
-        });
+      // The structure is now { name: ['your-name', 'full_name'], email: ['your-email'] }
+      // We need to create a reverse map: { 'your-name': 'name', 'full_name': 'name' }
+      for (const standardField in mappings) {
+        if (Array.isArray(mappings[standardField])) {
+          mappings[standardField].forEach((customField) => {
+            if (customField) {
+              // Ensure not empty
+              processedMappings[customField] = standardField;
+            }
+          });
+        }
+      }
+      this.log({
+        message: "Processed field mappings",
+        data: processedMappings,
       });
       return processedMappings;
     },
@@ -50,7 +74,11 @@ document.addEventListener("DOMContentLoaded", () => {
       const mappedData = {};
       formData.forEach((value, key) => {
         const mappedKey = this.fieldMappings[key] || key;
-        mappedData[mappedKey] = value;
+        if (mappedData.hasOwnProperty(mappedKey)) {
+          mappedData[mappedKey] += " | " + value; // Concatenate with a pipe
+        } else {
+          mappedData[mappedKey] = value;
+        }
       });
       return mappedData;
     },
@@ -69,14 +97,19 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!this.settings.octanistID) return;
       try {
         const url = `https://octanist.com/api/integrations/incoming/wp/${this.settings.octanistID}/`;
-        await fetch(url, {
+        const response = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(data),
           keepalive: true, // Crucial for AJAX forms
         });
+        if (response.ok) {
+          this.log("Data successfully sent to Octanist endpoint.");
+        } else {
+          this.log(`Failed to send data: ${response.statusText}`, "error");
+        }
       } catch (error) {
-        console.error("Error sending data:", error);
+        this.log(`Error sending data: ${error}`, "error");
       }
     },
 
@@ -91,6 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
           custom: data.custom,
         },
       });
+      this.log({ message: "Sent data to dataLayer", data: data });
     },
 
     bindForms() {
@@ -108,13 +142,20 @@ document.addEventListener("DOMContentLoaded", () => {
         'form[id*="gform_"]',
       ].join(", ");
 
-      document.querySelectorAll(formSelectors).forEach((form) => {
+      const forms = document.querySelectorAll(formSelectors);
+      this.log({
+        message: `Found ${forms.length} forms to track.`,
+        data: forms,
+      });
+
+      forms.forEach((form) => {
         form.addEventListener("submit", this.handleSubmit.bind(this));
       });
     },
 
     handleSubmit(event) {
       const form = event.target;
+      this.log({ message: "Form submitted.", data: form });
       try {
         this.appendOctanistIdToForm(form);
         const mappedData = this.mapFormFields(form);
@@ -128,6 +169,8 @@ document.addEventListener("DOMContentLoaded", () => {
         mappedData.domain = window.location.hostname;
         mappedData.path = window.location.pathname;
 
+        this.log({ message: "Collected and mapped data", data: mappedData });
+
         if (this.settings.sendToOctanist === "1") {
           this.sendDataToEndpoint(mappedData);
         }
@@ -135,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
           this.sendToDataLayer(mappedData);
         }
       } catch (error) {
-        console.error("Error processing form for Octanist:", error);
+        this.log(`Error processing form for Octanist: ${error}`, "error");
       }
     },
   };

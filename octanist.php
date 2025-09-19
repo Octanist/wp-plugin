@@ -18,6 +18,7 @@ if (!defined('ABSPATH')) {
 
 define('OCTANIST_PATH', plugin_dir_path(__FILE__));
 define('OCTANIST_URL', plugin_dir_url(__FILE__));
+define('OCTANIST_VERSION', '2.0.0');
 
 require_once OCTANIST_PATH . 'includes/admin.php';
 
@@ -40,6 +41,7 @@ function octanist_activate_plugin()
 
     if (!get_option('octanist_settings')) {
         add_option('octanist_settings', $default_settings);
+        add_option('octanist_version', OCTANIST_VERSION);
     }
 }
 
@@ -47,13 +49,14 @@ register_deactivation_hook(__FILE__, 'octanist_deactivate_plugin');
 function octanist_deactivate_plugin()
 {
     delete_option('octanist_settings');
+    delete_option('octanist_version');
 }
 
 // Add a settings link to the plugin actions
 add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'octanist_add_action_links');
 function octanist_add_action_links($links)
 {
-    $settings_link = '<a href="' . admin_url('options-general.php?page=octanist-settings') . '">' . __('Settings') . '</a>';
+    $settings_link = '<a href="' . esc_url(admin_url('options-general.php?page=octanist-settings')) . '">' . __('Settings', 'octanist') . '</a>';
     array_unshift($links, $settings_link);
     return $links;
 }

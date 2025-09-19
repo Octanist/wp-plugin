@@ -1,0 +1,89 @@
+# Copyright (C) 2025 Octanist
+# This file is distributed under the same license as the Octanist plugin.
+msgid ""
+msgstr ""
+"Project-Id-Version: Octanist 2.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/octanist/wp-plugin/issues\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2025-09-19 12:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WordPress\n"
+"X-Domain: octanist\n"
+
+#: includes/admin.php:20
+msgid "Octanist Settings"
+msgstr ""
+
+#: includes/admin.php:21
+#: includes/admin.php:57
+msgid "Octanist"
+msgstr ""
+
+#: includes/admin.php:111
+msgid "General Settings"
+msgstr ""
+
+#: includes/admin.php:118
+msgid "Octanist ID"
+msgstr ""
+
+#: includes/admin.php:127
+msgid "Field Mappings"
+msgstr ""
+
+#: includes/admin.php:136
+#, php-format
+msgid "%s Fields"
+msgstr ""
+
+#: includes/admin.php:148
+msgid "Advanced Settings"
+msgstr ""
+
+#: includes/admin.php:154
+msgid "Send data to Octanist"
+msgstr ""
+
+#: includes/admin.php:163
+msgid "Send data to (GTM) Datalayer"
+msgstr ""
+
+#: includes/admin.php:172
+msgid "Debug Mode"
+msgstr ""
+
+#: includes/admin.php:189
+msgid "Enter all possible form field names for each standard Octanist property. For example, your \"Name\" field might be called \"name\", \"your-name\", or \"full_name\" in different forms."
+msgstr ""
+
+#: includes/admin.php:190
+msgid "Note:"
+msgstr ""
+
+#: includes/admin.php:190
+msgid "If a form contains multiple fields that map to the same property (e.g., separate \"First Name\" and \"Last Name\" fields both mapped to \"Name\"), their values will be combined with a pipe symbol ( | )."
+msgstr ""
+
+#: includes/admin.php:201
+msgid "-"
+msgstr ""
+
+#: includes/admin.php:204
+msgid "+ Add Field"
+msgstr ""
+
+#: includes/admin.php:214
+msgid "Enable to log detailed diagnostic information to the browser console."
+msgstr ""
+
+#: includes/admin.php:221
+msgid "Security check failed. Please try again."
+msgstr ""
+
+#: octanist.php:56
+msgid "Settings"
+msgstr ""

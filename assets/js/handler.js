@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const octanistStandardFormHandler = {
+  const octanistFormHandler = {
     init() {
       this.settings = this.getSettings();
       if (!this.settings) {
@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      this.log("Octanist STANDARD handler.js loaded");
+      this.log("Octanist Universal handler.js loaded");
 
       this.cookies = this.getCookies();
       this.fieldMappings = this.processFieldMappings(
@@ -90,19 +90,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     },
 
-    async sendDataToEndpoint(data) {
+    sendDataToEndpoint(data) {
       if (!this.settings.octanistID) return;
       try {
         const url = `https://octanist.com/api/integrations/incoming/wp/${this.settings.octanistID}/`;
-        const response = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+        const blob = new Blob([JSON.stringify(data)], {
+          type: "application/json",
         });
-        if (response.ok) {
-          this.log("Data successfully sent to Octanist endpoint.");
+        if (navigator.sendBeacon(url, blob)) {
+          this.log("Data successfully sent to Octanist endpoint via Beacon.");
         } else {
-          this.log(`Failed to send data: ${response.statusText}`, "error");
+          this.log(`Beacon failed to send data`, "error");
         }
       } catch (error) {
         this.log(`Error sending data: ${error}`, "error");
@@ -148,11 +146,10 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     },
 
-    async handleSubmit(event) {
-      event.preventDefault(); // Prevent the form from submitting immediately
+    handleSubmit(event) {
       const form = event.target;
       this.log({
-        message: "Form submitted, preventing default action.",
+        message: "Form submitted, proceeding with data collection.",
         data: form,
       });
 
@@ -171,22 +168,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
         this.log({ message: "Collected and mapped data", data: mappedData });
 
-        const tasks = [];
         if (this.settings.sendToOctanist === "1") {
-          tasks.push(this.sendDataToEndpoint(mappedData));
+          this.sendDataToEndpoint(mappedData);
         }
         if (this.settings.sendToDataLayer === "1") {
           this.sendToDataLayer(mappedData);
         }
-
-        if (tasks.length > 0) {
-          await Promise.all(tasks);
-        }
       } catch (error) {
         this.log(`Error processing form for Octanist: ${error}`, "error");
-      } finally {
-        this.log("Resubmitting form now.");
-        form.submit(); // Resubmit the form
       }
     },
   };
@@ -197,5 +186,5 @@ document.addEventListener("DOMContentLoaded", () => {
     return re.test(email.toLowerCase());
   }
 
-  octanistStandardFormHandler.init();
+  octanistFormHandler.init();
 });

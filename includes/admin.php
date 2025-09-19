@@ -34,13 +34,13 @@ class Octanist_Admin
         }
         wp_enqueue_style(
             'octanist-admin-css',
-            OFH_URL . 'assets/css/admin-styles.css',
+            OCTANIST_URL . 'assets/css/admin-styles.css',
             [],
             '1.1.0'
         );
         wp_enqueue_script(
             'octanist-admin-js',
-            OFH_URL . 'assets/js/admin.js',
+            OCTANIST_URL . 'assets/js/admin.js',
             ['jquery'],
             '1.1.0',
             true
@@ -53,7 +53,7 @@ class Octanist_Admin
         ?>
         <div class="wrap" id="octanist-settings-page">
             <div class="octanist-header">
-                <img src="<?php echo esc_url(OFH_URL . 'assets/icon.svg'); ?>" alt="Octanist Logo">
+                <img src="<?php echo esc_url(OCTANIST_URL . 'assets/icon.svg'); ?>" alt="Octanist Logo">
                 <h1>Octanist Settings</h1>
             </div>
             <form method="POST" action="options.php">
@@ -168,14 +168,6 @@ class Octanist_Admin
         );
 
         add_settings_field(
-            'submission_mode',
-            'Form Submission Mode',
-            [$this, 'render_field_submission_mode'],
-            'octanist-settings-page',
-            'octanist_advanced_section'
-        );
-        
-        add_settings_field(
             'debug_mode',
             'Debug Mode',
             [$this, 'render_field_checkbox'],
@@ -223,24 +215,6 @@ class Octanist_Admin
         }
     }
 
-    public function render_field_submission_mode()
-    {
-        $mode = isset($this->options['submission_mode']) ? $this->options['submission_mode'] : 'ajax';
-        ?>
-        <fieldset>
-            <label>
-                <input type="radio" name="octanist_settings[submission_mode]" value="ajax" <?php checked($mode, 'ajax'); ?>>
-                <span>AJAX (Default - For most form plugins)</span>
-            </label>
-            <br>
-            <label>
-                <input type="radio" name="octanist_settings[submission_mode]" value="standard" <?php checked($mode, 'standard'); ?>>
-                <span>Standard (non-AJAX forms)</span>
-            </label>
-        </fieldset>
-        <?php
-    }
-
     public function sanitize_settings($input)
     {
         $new_input = [];
@@ -253,9 +227,6 @@ class Octanist_Admin
         $new_input['send_to_datalayer'] = isset($input['send_to_datalayer']) ? '1' : '0';
         $new_input['debug_mode'] = isset($input['debug_mode']) ? '1' : '0';
         
-        // Sanitize radio button
-        $new_input['submission_mode'] = isset($input['submission_mode']) && in_array($input['submission_mode'], ['ajax', 'standard']) ? $input['submission_mode'] : 'ajax';
-
         // Sanitize field mappings (array of arrays)
         if (isset($input['field_mappings']) && is_array($input['field_mappings'])) {
             foreach ($input['field_mappings'] as $field => $mappings) {
@@ -278,19 +249,16 @@ $octanist_admin->__init();
 // We just need to update the script loader to use the new settings format.
 add_action('wp_enqueue_scripts', function () {
     $options = get_option('octanist_settings', []);
-    $submission_mode = isset($options['submission_mode']) ? $options['submission_mode'] : 'ajax';
-    $handler_script = ($submission_mode === 'standard') ? 'handler-standard.js' : 'handler-ajax.js';
-    $script_handle = 'octanist-handler-' . $submission_mode;
 
     wp_enqueue_script(
-        $script_handle,
-        OFH_URL . 'assets/js/' . $handler_script,
+        'octanist-handler',
+        OCTANIST_URL . 'assets/js/handler.js',
         [],
-        '1.1.0', // Version bump
+        '2.0.0', // Version bump for unified handler
         true
     );
 
-    wp_localize_script($script_handle, 'octanistSettings', [
+    wp_localize_script('octanist-handler', 'octanistSettings', [
         'octanistID'      => $options['octanist_id'] ?? '',
         'fieldMappings'   => $options['field_mappings'] ?? [],
         'sendToOctanist'  => $options['send_to_octanist'] ?? '1',

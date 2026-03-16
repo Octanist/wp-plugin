@@ -2,8 +2,8 @@
 Contributors: octanist
 Tags: tracking, forms, leads, conversions, analytics
 Requires at least: 6.0
-Tested up to: 6.8
-Stable tag: 2.0.0
+Tested up to: 6.9.4
+Stable tag: 2.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -64,6 +64,11 @@ Yes. This plugin is a connector and requires an active Octanist account to funct
 Different forms use different names for the same type of field (e.g., `email`, `your-email`). The mapping tool lets you account for all these variations. For each standard property (Name, Email, Phone), you can add multiple field names that the plugin should look for. If a form contains multiple fields that map to the same property (like "First Name" and "Last Name"), their values will be intelligently combined with a pipe symbol ( | ).
 
 == Changelog ==
+
+= 2.0.1 =
+*   **FIX:** Plugin settings are no longer deleted on deactivation — data is now only removed on full uninstall.
+*   **IMPROVEMENT:** Updated tested up to WordPress 6.9.4.
+*   **IMPROVEMENT:** Updated branding assets.
 
 = 2.0.0 =
 *   **MAJOR REFACTOR:** Overhauled the entire plugin to use the WordPress Settings API for improved security and stability.

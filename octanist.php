@@ -2,14 +2,14 @@
 /**
  * Plugin Name:         Octanist
  * Description:         Connect your WordPress forms to the Octanist platform for powerful, seamless offline conversion tracking.
- * Version:             2.0.0
+ * Version:             2.0.1
  * Author:              Octanist
  * Author URI:          https://www.octanist.com/
  * Text Domain:         octanist
  * License:             GPLv2 or later
  * License URI:         https://www.gnu.org/licenses/gpl-2.0.html
  * Requires at least:   6.0
- * Tested up to:        6.8
+ * Tested up to:        6.9.4
  */
 
 if (!defined('ABSPATH')) {
@@ -18,7 +18,7 @@ if (!defined('ABSPATH')) {
 
 define('OCTANIST_PATH', plugin_dir_path(__FILE__));
 define('OCTANIST_URL', plugin_dir_url(__FILE__));
-define('OCTANIST_VERSION', '2.0.0');
+define('OCTANIST_VERSION', '2.0.1');
 
 require_once OCTANIST_PATH . 'includes/admin.php';
 
@@ -48,8 +48,8 @@ function octanist_activate_plugin()
 register_deactivation_hook(__FILE__, 'octanist_deactivate_plugin');
 function octanist_deactivate_plugin()
 {
-    delete_option('octanist_settings');
-    delete_option('octanist_version');
+    // Intentionally empty — data is preserved on deactivation.
+    // Settings are only removed on full uninstall (see uninstall.php).
 }
 
 // Add a settings link to the plugin actions

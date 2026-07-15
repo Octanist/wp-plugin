@@ -1,89 +1,254 @@
-# Copyright (C) 2025 Octanist
+# Copyright (C) 2026 Octanist
 # This file is distributed under the same license as the Octanist plugin.
 msgid ""
 msgstr ""
-"Project-Id-Version: Octanist 2.0.0\n"
-"Report-Msgid-Bugs-To: https://github.com/octanist/wp-plugin/issues\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
+"Project-Id-Version: Octanist 4.0.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/octanist\n"
+"POT-Creation-Date: 2026-06-08 08:31+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-09-19 12:00+0000\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"X-Generator: WordPress\n"
+"X-Generator: Octanist local extractor\n"
 "X-Domain: octanist\n"
 
-#: includes/admin.php:20
-msgid "Octanist Settings"
+#: includes/class-octanist-settings.php:562
+msgid "%d total miss"
+msgid_plural "%d total misses"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/class-octanist-settings.php:538
+msgid "%s ago"
 msgstr ""
 
-#: includes/admin.php:21
-#: includes/admin.php:57
+#: includes/class-octanist-settings.php:409
+#: includes/class-octanist-settings.php:512
+msgid "Auto, detect from your CMP"
+msgstr ""
+
+#: includes/class-octanist-settings.php:368
+msgid "Change settings manually"
+msgstr ""
+
+#: includes/class-octanist-settings.php:399
+#: includes/class-octanist-settings.php:498
+msgid "Client-side"
+msgstr ""
+
+#: includes/class-octanist-settings.php:312
+msgid "Connect Octanist"
+msgstr ""
+
+#: includes/class-octanist-settings.php:300
+#: includes/class-octanist-settings.php:344
+msgid "Connected"
+msgstr ""
+
+#: includes/class-octanist-settings.php:359
+#: includes/class-octanist-settings.php:407
+msgid "Consent mode"
+msgstr ""
+
+#: includes/class-octanist-settings.php:331
+msgid "Current settings"
+msgstr ""
+
+#: includes/class-octanist-settings.php:411
+#: includes/class-octanist-settings.php:514
+msgid "Denied, always off"
+msgstr ""
+
+#: includes/class-octanist-settings.php:477
+msgid "Detected form plugins"
+msgstr ""
+
+#: includes/class-octanist-settings.php:260
+msgid "Dismiss"
+msgstr ""
+
+#: includes/class-octanist-settings.php:418
+msgid "Enter a new setup code"
+msgstr ""
+
+#: includes/class-octanist-settings.php:485
+msgid "Event route"
+msgstr ""
+
+#: includes/class-octanist-settings.php:256
+msgid "Field mappings, debug mode, and the datalayer option have been removed. Configuration is now a single measurement ID."
+msgstr ""
+
+#: includes/class-octanist-settings.php:295
+msgid "First-party pixel proxy and server-side form capture."
+msgstr ""
+
+#: includes/class-octanist-settings.php:354
+#: includes/class-octanist-settings.php:384
+msgid "Form capture"
+msgstr ""
+
+#: includes/class-octanist-settings.php:410
+#: includes/class-octanist-settings.php:513
+msgid "Granted, always on"
+msgstr ""
+
+#: includes/class-octanist-settings.php:444
+msgid "Health"
+msgstr ""
+
+#: includes/class-octanist-settings.php:393
+msgid "Hooks into major WordPress form plugins including Gravity Forms, Contact Form 7, WPForms, Ninja Forms, Elementor Pro, Fluent Forms, Formidable Forms, Forminator, SureForms, and Divi Contact Form."
+msgstr ""
+
+#: includes/class-octanist-settings.php:351
+msgid "Identifies this property in Octanist."
+msgstr ""
+
+#: includes/class-octanist-settings.php:525
+msgid "Keeps analytics and marketing storage denied."
+msgstr ""
+
+#: includes/class-octanist-settings.php:445
+msgid "Last activity from form captures and proxied events."
+msgstr ""
+
+#: includes/class-octanist-settings.php:454
+msgid "Last failure"
+msgstr ""
+
+#: includes/class-octanist-settings.php:471
+msgid "Last missing session ID"
+msgstr ""
+
+#: includes/class-octanist-settings.php:463
+msgid "Last source"
+msgstr ""
+
+#: includes/class-octanist-settings.php:450
+msgid "Last success"
+msgstr ""
+
+#: includes/class-octanist-settings.php:400
+msgid "Lets the pixel bind to forms in the browser. Use only if your form plugin isn't supported server-side."
+msgstr ""
+
+#: includes/class-octanist-settings.php:349
+#: includes/class-octanist-settings.php:371
+msgid "Measurement ID"
+msgstr ""
+
+#: includes/class-octanist-settings.php:143
+msgid "Measurement ID is required for the pixel to load."
+msgstr ""
+
+#: includes/class-octanist-settings.php:300
+msgid "Not configured"
+msgstr ""
+
+#: includes/class-octanist-settings.php:294
+#: includes/class-octanist-settings.php:78
+#: includes/class-octanist-settings.php:79
 msgid "Octanist"
 msgstr ""
 
-#: includes/admin.php:111
-msgid "General Settings"
+#: includes/class-octanist-settings.php:255
+msgid "Octanist has been updated to 4.0."
 msgstr ""
 
-#: includes/admin.php:118
-msgid "Octanist ID"
+#: includes/class-octanist-settings.php:332
+msgid "Octanist is connected. You can leave these settings as they are, change them manually, or paste a new setup code."
 msgstr ""
 
-#: includes/admin.php:127
-msgid "Field Mappings"
+#: includes/class-octanist-settings.php:123
+msgid "Octanist setup code applied."
 msgstr ""
 
-#: includes/admin.php:136
-#, php-format
-msgid "%s Fields"
+#: includes/class-octanist-settings.php:259
+msgid "Open settings"
 msgstr ""
 
-#: includes/admin.php:148
-msgid "Advanced Settings"
+#: includes/class-octanist-settings.php:313
+msgid "Paste the setup code from Octanist onboarding to apply your measurement ID, form capture mode, and consent mode."
 msgstr ""
 
-#: includes/admin.php:154
-msgid "Send data to Octanist"
+#: includes/class-octanist-settings.php:341
+msgid "Pixel configuration is active"
 msgstr ""
 
-#: includes/admin.php:163
-msgid "Send data to (GTM) Datalayer"
+#: includes/class-octanist-settings.php:481
+msgid "Pixel route"
 msgstr ""
 
-#: includes/admin.php:172
-msgid "Debug Mode"
+#: includes/class-octanist-settings.php:467
+msgid "Queued form retries"
 msgstr ""
 
-#: includes/admin.php:189
-msgid "Enter all possible form field names for each standard Octanist property. For example, your \"Name\" field might be called \"name\", \"your-name\", or \"full_name\" in different forms."
+#: includes/class-octanist-settings.php:391
+msgid "Recommended"
 msgstr ""
 
-#: includes/admin.php:190
-msgid "Note:"
+#: includes/class-octanist-settings.php:524
+msgid "Runs as granted unless you gate the script yourself."
 msgstr ""
 
-#: includes/admin.php:190
-msgid "If a form contains multiple fields that map to the same property (e.g., separate \"First Name\" and \"Last Name\" fields both mapped to \"Name\"), their values will be combined with a pipe symbol ( | )."
+#: includes/class-octanist-settings.php:438
+msgid "Save changes"
 msgstr ""
 
-#: includes/admin.php:201
-msgid "-"
+#: includes/class-octanist-settings.php:429
+msgid "Saving a setup code replaces the current measurement ID, form capture mode, and consent mode."
 msgstr ""
 
-#: includes/admin.php:204
-msgid "+ Add Field"
+#: includes/class-octanist-settings.php:390
+#: includes/class-octanist-settings.php:499
+msgid "Server-side"
 msgstr ""
 
-#: includes/admin.php:214
-msgid "Enable to log detailed diagnostic information to the browser console."
-msgstr ""
-
-#: includes/admin.php:221
-msgid "Security check failed. Please try again."
-msgstr ""
-
-#: octanist.php:56
+#: octanist.php:68
 msgid "Settings"
+msgstr ""
+
+#: includes/class-octanist-settings.php:324
+#: includes/class-octanist-settings.php:428
+msgid "Setup code"
+msgstr ""
+
+#: includes/class-octanist-settings.php:208
+msgid "Setup code contains an invalid consent mode."
+msgstr ""
+
+#: includes/class-octanist-settings.php:201
+msgid "Setup code contains an invalid form capture mode."
+msgstr ""
+
+#: includes/class-octanist-settings.php:181
+msgid "Setup code contains an invalid measurement ID."
+msgstr ""
+
+#: includes/class-octanist-settings.php:162
+msgid "Setup code must start with OCTA1."
+msgstr ""
+
+#: includes/class-octanist-settings.php:170
+msgid "Setup code should look like OCTA1.OCT-XXXXXXXX.s.a."
+msgstr ""
+
+#: includes/class-octanist-settings.php:505
+msgid "The browser pixel listens for form submits."
+msgstr ""
+
+#: includes/class-octanist-settings.php:325
+msgid "The code is decoded inside WordPress. No request is sent to Octanist when you save it."
+msgstr ""
+
+#: includes/class-octanist-settings.php:342
+msgid "These are the values currently used by the Octanist pixel on this WordPress site."
+msgstr ""
+
+#: includes/class-octanist-settings.php:523
+msgid "Uses detected consent signals when available."
+msgstr ""
+
+#: includes/class-octanist-settings.php:506
+msgid "WordPress form hooks send captures server-side."
 msgstr ""

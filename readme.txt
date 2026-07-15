@@ -1,85 +1,94 @@
 === Octanist ===
 Contributors: octanist
-Tags: tracking, forms, leads, conversions, analytics
+Tags: tracking, analytics, forms, leads, conversions
 Requires at least: 6.0
-Tested up to: 6.9.4
-Stable tag: 2.0.1
+Tested up to: 7.0
+Stable tag: 4.0.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Connect your WordPress forms to the Octanist platform for powerful, seamless offline conversion tracking. See which campaigns deliver real customers.
+First-party proxy for the Octanist pixel. Serves the tracking script from your own domain and captures form submissions server-side.
 
 == Description ==
 
-### What is Octanist?
+Octanist is a conversion tracking platform that bridges online marketing with offline sales. This plugin is the official connector for WordPress.
 
-Octanist is a powerful platform designed to bridge the gap between your online marketing efforts and your offline sales. While other analytics tools show you clicks and form submissions, Octanist helps you track what happens *after* the lead comes in. By connecting your website's leads to your sales data, you can finally get a clear, accurate picture of your marketing ROI and identify which campaigns are delivering real, paying customers.
+### How it works
 
-This plugin is the official connector for WordPress, making it incredibly simple to send all your form submissions directly into your Octanist account.
+The plugin acts as a first-party proxy for the Octanist pixel:
 
-### How The Plugin Works
+*   **Pixel proxy.** The tracking script is served from your own WordPress site (`/wp-json/oct/p`) from a local cache and refreshed from Octanist in the background. No third-party domain, no DNS setup, no ad-blocker signal to match on.
+*   **Event proxy.** Events from the pixel POST to `/wp-json/oct/e`; the plugin forwards them immediately with a one-second upstream timeout so onboarding and live reporting stay responsive. Pixel failures are not persisted in WordPress, which prevents an upstream outage from filling the site database.
+*   **Server-side form capture.** Form submissions from Gravity Forms, Contact Form 7, WPForms, Ninja Forms, Elementor Pro, Fluent Forms, Formidable Forms, Forminator, SureForms, and Divi Contact Form are captured server-side via action hooks and forwarded synchronously with a longer timeout. Confirmed failures are queued for retry.
 
-The Octanist plugin is designed to be a lightweight yet powerful "set it and forget it" tool. Once configured, it automatically detects and captures submissions from the most popular form plugins in WordPress.
+### Setup
 
-*   **Automatic Form Detection:** The plugin automatically finds forms from plugins like Contact Form 7, Elementor Forms, WPForms, Forminator, and more.
-*   **Intelligent Field Mapping:** Our intuitive settings panel allows you to map your various form fields (e.g., "your-name", "full_name") to the standard Octanist properties ("Name"). If a form has multiple fields that map to the same property (like First Name and Last Name), the plugin intelligently combines them.
-*   **Flexible Submission Handling:** We understand that not all form plugins are the same. That's why we've included both an AJAX mode (for modern forms that don't reload the page) and a Standard mode (for traditional forms), ensuring maximum compatibility.
-*   **Debug Mode:** For easy troubleshooting, you can enable a debug mode that logs detailed information to your browser's console, helping you solve any integration issues in seconds.
+1. Install and activate the plugin.
+2. Go to **Settings → Octanist**.
+3. Paste your measurement ID.
+4. Done.
 
-### Data Privacy & Compliance
+That's it. No field mapping. No DNS configuration. Listener mode and consent mode are optional toggles.
 
-Connecting your website to a third-party service requires careful attention to data privacy. Octanist and this plugin are designed with this in mind.
+### Data privacy
 
-*   **Octanist Account Required:** To use this plugin, you must have an active account with Octanist.com.
-*   **Data Processing Agreement (DPA):** As the owner of the website, you are the data controller. By using Octanist, you should have a DPA in place. Please contact Octanist support to arrange this.
-*   **Consent & Local Regulations (GDPR, etc.):** It is your responsibility to comply with all local data privacy regulations. This includes, but is not limited to, obtaining proper consent from users before collecting their data and ensuring your privacy policy is up to date. The use of a consent management platform (CMP) to handle cookie and tracking consent is highly recommended.
+*   **Octanist account required.** You need an active account at octanist.com.
+*   **You are the data controller.** Consent capture and privacy-policy disclosure are your responsibility. A consent management platform (CMP) is recommended.
 
 == Installation ==
 
-1.  Upload the `octanist` folder to the `/wp-content/plugins/` directory.
-2.  Activate the plugin through the 'Plugins' menu in WordPress.
-3.  Go to **Settings > Octanist** to configure the plugin.
-4.  Enter your **Octanist ID** (found in your Octanist dashboard under Integrations).
-5.  Configure your **Field Mappings** to match the fields in your forms.
-6.  Select the appropriate **Form Submission Mode** for your site.
-7.  Save your changes.
+1. Upload the `octanist` folder to `/wp-content/plugins/`.
+2. Activate the plugin via the Plugins screen.
+3. Go to **Settings → Octanist** and paste your measurement ID.
 
 == Frequently Asked Questions ==
 
-= My form submissions aren't showing up in Octanist. What should I do? =
+= Do I need a custom subdomain or DNS setup? =
 
-The first step is to enable **Debug Mode** in the plugin settings (under the "Advanced" card). Open your browser's developer console (usually by pressing F12) and submit a test form. The debug logs will tell you:
-*   Which forms the plugin found on the page.
-*   The data it captured from the form.
-*   Whether it successfully sent the data to Octanist.
+No. The plugin proxies the pixel through your WordPress site itself, so everything is first-party automatically.
 
-If the form submission seems to break or the page reloads unexpectedly, try switching the **Form Submission Mode** from "AJAX" to "Standard" (or vice-versa).
+= Which form plugins are supported? =
 
-= Do I need an Octanist account to use this plugin? =
+Gravity Forms, Contact Form 7, WPForms, Ninja Forms, Elementor Pro Forms, Fluent Forms, Formidable Forms, Forminator, SureForms, and Divi Contact Form.
 
-Yes. This plugin is a connector and requires an active Octanist account to function.
+= How are form submissions captured? =
 
-= How does the advanced field mapping work? =
+Via server-side action hooks on each supported plugin, not by intercepting the form in the browser. This works with AJAX forms and is resilient to theme/plugin conflicts.
 
-Different forms use different names for the same type of field (e.g., `email`, `your-email`). The mapping tool lets you account for all these variations. For each standard property (Name, Email, Phone), you can add multiple field names that the plugin should look for. If a form contains multiple fields that map to the same property (like "First Name" and "Last Name"), their values will be intelligently combined with a pipe symbol ( | ).
+= What happens if the Octanist service is temporarily unreachable? =
+
+Pixel events are forwarded immediately through the first-party WordPress endpoint and are not persisted locally when upstream is unavailable. Server-side form listeners wait for the upstream HTTP response. Failed form submissions are queued separately and retried with backoff through WP-Cron. A health panel in settings shows the last activity and queued form count.
 
 == Changelog ==
 
+= 4.0.1 =
+*   **PERFORMANCE:** The pixel endpoint serves its local cache immediately and refreshes Octanist upstream in the background.
+*   **UPGRADE:** Existing v4 caches are migrated and refreshed through a non-blocking runtime upgrade routine.
+*   **PERFORMANCE:** Pixel events use an immediate first-party forwarding path with a one-second timeout and are never stored in the WordPress retry queue.
+*   **RELIABILITY:** Server-side form listeners wait for the upstream HTTP response with a longer timeout.
+*   **RELIABILITY:** Only failed form submissions are persisted for retry, with an early retry wake-up in addition to the hourly safety job.
+*   **RELIABILITY:** The form retry queue locks writes to reduce concurrent overwrite risk and no longer silently evicts older submissions when full.
+
+= 4.0.0 =
+*   **RELEASE:** Stable release for the Octanist Pixel rollout.
+*   **COMPATIBILITY:** Tested up to WordPress 7.0.
+
+= 3.0.0 =
+*   **MAJOR REWRITE.** The plugin is now a first-party proxy for the new Octanist pixel.
+*   **NEW:** Pixel and event traffic proxied through WordPress (`/wp-json/oct/p` and `/wp-json/oct/e`), fully first-party, no custom domain required.
+*   **NEW:** Server-side form capture via action hooks for Gravity Forms, Contact Form 7, WPForms, Ninja Forms, Elementor Pro, Fluent Forms, Formidable Forms, Forminator, SureForms, and Divi Contact Form.
+*   **NEW:** Failed server-side form forwards are queued and retried with WP-Cron.
+*   **NEW:** One-field setup. Paste your measurement ID and you're done.
+*   **NEW:** Client-signal forwarding (IP, country, UA, referer, accept-language) so upstream attribution stays accurate even when the request is proxied.
+*   **REMOVED:** Field mapping, AJAX/standard submission mode toggle, debug mode, datalayer option. All gone.
+*   **MIGRATION:** v2 field-mapping settings are preserved as `octanist_settings_legacy` for one release; a one-time admin notice explains the new setup.
+
 = 2.0.1 =
-*   **FIX:** Plugin settings are no longer deleted on deactivation — data is now only removed on full uninstall.
-*   **IMPROVEMENT:** Updated tested up to WordPress 6.9.4.
-*   **IMPROVEMENT:** Updated branding assets.
+*   **FIX:** Plugin settings are no longer deleted on deactivation.
+*   **IMPROVEMENT:** Tested up to WordPress 6.9.4.
 
 = 2.0.0 =
-*   **MAJOR REFACTOR:** Overhauled the entire plugin to use the WordPress Settings API for improved security and stability.
-*   **NEW:** Added a professional, ShadCN-inspired UI for the settings page.
-*   **NEW:** Implemented an advanced, dynamic UI for field mappings. No more comma-separated values!
-*   **NEW:** Added a "Debug Mode" for easy troubleshooting.
-*   **IMPROVEMENT:** Form submission logic now intelligently handles both AJAX and standard forms.
-*   **IMPROVEMENT:** Values from multiple fields mapped to the same property (e.g., First Name, Last Name) are now intelligently combined.
-*   **IMPROVEMENT:** Plugin menu is now correctly located under the main "Settings" menu.
+*   **MAJOR REFACTOR:** WordPress Settings API, new UI, dynamic field mappings, debug mode.
 
 = 1.0.0 =
 *   Initial release.
-*   Basic form tracking for popular plugins.
-*   Basic field mapping.

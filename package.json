@@ -1,0 +1,17 @@
+{
+  "name": "octanist-wp-plugin",
+  "private": true,
+  "version": "4.0.1",
+  "description": "Development tooling for the Octanist WordPress plugin.",
+  "scripts": {
+    "start": "wp-env start",
+    "stop": "wp-env stop",
+    "clean": "wp-env clean all",
+    "logs": "wp-env logs",
+    "cli": "wp-env run cli wp",
+    "destroy": "wp-env destroy"
+  },
+  "devDependencies": {
+    "@wordpress/env": "^10.0.0"
+  }
+}

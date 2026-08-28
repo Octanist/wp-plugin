@@ -4,7 +4,7 @@
 **Tags:** tracking, analytics, forms, leads, conversions
 **Requires at least:** 6.0
 **Tested up to:** 7.0
-**Stable tag:** 4.0.1
+**Stable tag:** 4.1.0
 **License:** GPLv2 or later
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -20,6 +20,7 @@ The plugin acts as a first-party proxy for the Octanist pixel:
 
 - **Pixel proxy:** The tracking script is served from your own WordPress site at `/wp-json/oct/p` from a local cache, with refreshes handled in the background.
 - **Event proxy:** Events from the pixel POST to `/wp-json/oct/e`; the plugin forwards them immediately with a one-second upstream timeout so onboarding and live reporting stay responsive. Pixel failures are not persisted in WordPress, which prevents an upstream outage from filling the site database.
+- **Call tracking proxy:** The pixel can request a dynamic number at `/wp-json/oct/call-tracking/assign`. The plugin forwards that request to Octanist so website numbers stay first-party.
 - **Server-side form capture:** Form submissions from supported plugins are captured via server-side action hooks and forwarded synchronously with a longer timeout. Confirmed failures are queued for retry.
 
 Supported form plugins:
@@ -45,6 +46,12 @@ Supported form plugins:
 Listener mode and consent mode are optional settings.
 
 ## Changelog
+
+### 4.1.0
+
+- Added an optional Call tracking setting, off by default.
+- Added a first-party proxy for call tracking assignment (`POST /wp-json/oct/call-tracking/assign`).
+- Setup codes can include a call tracking flag (`OCTA1.OCT-XXXXXXXX.s.a.t`).
 
 ### 4.0.1
 

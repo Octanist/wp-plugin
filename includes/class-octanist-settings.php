@@ -26,6 +26,7 @@ class Octanist_Settings
             'measurement_id' => '',
             'listener_mode'  => 'server',
             'consent_mode'   => 'auto',
+            'call_tracking'  => false,
         ];
         $settings = get_option(self::OPTION, []);
         if (!is_array($settings)) {
@@ -52,6 +53,9 @@ class Octanist_Settings
             'data-consent-mode' => $s['consent_mode'],
             'data-cookie-mode'  => 'server',
         ];
+        if (!empty($s['call_tracking'])) {
+            $attrs['data-call-tracking'] = 'true';
+        }
         if ($s['listener_mode'] === 'client') {
             // Value-less attribute, browser pixel binds to forms itself.
             $attrs['data-forms'] = '';
@@ -92,6 +96,7 @@ class Octanist_Settings
                 'measurement_id' => '',
                 'listener_mode'  => 'server',
                 'consent_mode'   => 'auto',
+                'call_tracking'  => false,
             ],
         ]);
     }
@@ -116,6 +121,9 @@ class Octanist_Settings
                 $input['measurement_id'] = $decoded['measurement_id'];
                 $input['listener_mode']  = $decoded['listener_mode'];
                 $input['consent_mode']   = $decoded['consent_mode'];
+                if (array_key_exists('call_tracking', $decoded)) {
+                    $input['call_tracking'] = $decoded['call_tracking'];
+                }
 
                 add_settings_error(
                     self::OPTION,
@@ -149,6 +157,7 @@ class Octanist_Settings
             'measurement_id' => $mid,
             'listener_mode'  => $listener,
             'consent_mode'   => $consent,
+            'call_tracking'  => !empty($input['call_tracking']),
         ];
     }
 
@@ -166,7 +175,7 @@ class Octanist_Settings
         }
 
         $parts = explode('.', $code);
-        if (count($parts) !== 4) {
+        if (count($parts) !== 4 && count($parts) !== 5) {
             return new WP_Error(
                 'octanist_setup_code_shape',
                 __('Setup code should look like OCTA1.OCT-XXXXXXXX.s.a.', 'octanist')
@@ -211,11 +220,24 @@ class Octanist_Settings
             );
         }
 
-        return [
+        $decoded = [
             'measurement_id' => $measurement_id,
             'listener_mode'  => $listener_mode,
             'consent_mode'   => $consent_mode,
         ];
+
+        if (isset($parts[4])) {
+            $call_code = sanitize_key((string) $parts[4]);
+            if (!in_array($call_code, ['t', 'n'], true)) {
+                return new WP_Error(
+                    'octanist_setup_code_call_tracking',
+                    __('Setup code contains an invalid call tracking flag.', 'octanist')
+                );
+            }
+            $decoded['call_tracking'] = $call_code === 't';
+        }
+
+        return $decoded;
     }
 
     public static function enqueue_assets($hook): void
@@ -362,6 +384,11 @@ class Octanist_Settings
                                         <dd><?php echo esc_html(self::format_consent_mode($settings['consent_mode'])); ?></dd>
                                         <span><?php echo esc_html(self::format_consent_mode_help($settings['consent_mode'])); ?></span>
                                     </div>
+                                    <div class="octanist-summary-tile">
+                                        <dt><?php esc_html_e('Call tracking', 'octanist'); ?></dt>
+                                        <dd><?php echo esc_html(self::format_call_tracking($settings['call_tracking'])); ?></dd>
+                                        <span><?php echo esc_html(self::format_call_tracking_help($settings['call_tracking'])); ?></span>
+                                    </div>
                                 </dl>
                             </div>
 
@@ -413,6 +440,18 @@ class Octanist_Settings
                                                 <option value="denied" <?php selected($settings['consent_mode'], 'denied'); ?>><?php esc_html_e('Denied, always off', 'octanist'); ?></option>
                                             </select>
                                         </label>
+
+                                        <div class="octanist-field">
+                                            <span class="octanist-field__label"><?php esc_html_e('Call tracking', 'octanist'); ?></span>
+                                            <input type="hidden" name="<?php echo esc_attr(self::OPTION); ?>[call_tracking]" value="0">
+                                            <label class="octanist-option <?php echo !empty($settings['call_tracking']) ? 'is-active' : ''; ?>">
+                                                <input type="checkbox" name="<?php echo esc_attr(self::OPTION); ?>[call_tracking]" value="1" <?php checked(!empty($settings['call_tracking'])); ?>>
+                                                <span class="octanist-option__content">
+                                                    <span class="octanist-option__title"><?php esc_html_e('Replace website phone numbers', 'octanist'); ?></span>
+                                                    <span class="octanist-option__desc"><?php esc_html_e('Turn this on after Octanist has enabled call tracking for this site.', 'octanist'); ?></span>
+                                                </span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </details>
 
@@ -428,7 +467,7 @@ class Octanist_Settings
                                             autocomplete="off"
                                             spellcheck="false"
                                             aria-label="<?php esc_attr_e('Setup code', 'octanist'); ?>">
-                                        <p class="octanist-help"><?php esc_html_e('Saving a setup code replaces the current measurement ID, form capture mode, and consent mode.', 'octanist'); ?></p>
+                                        <p class="octanist-help"><?php esc_html_e('Saving a setup code replaces the current measurement ID, form capture mode, consent mode, and call tracking setting when the code includes that flag.', 'octanist'); ?></p>
                                     </div>
                                 </details>
                             </div>
@@ -528,6 +567,20 @@ class Octanist_Settings
         ];
 
         return $labels[$mode] ?? $labels['auto'];
+    }
+
+    private static function format_call_tracking($enabled): string
+    {
+        return !empty($enabled)
+            ? __('On', 'octanist')
+            : __('Off', 'octanist');
+    }
+
+    private static function format_call_tracking_help($enabled): string
+    {
+        return !empty($enabled)
+            ? __('The pixel can replace website phone numbers.', 'octanist')
+            : __('Leave this off unless Octanist enabled call tracking for this site.', 'octanist');
     }
 
     private static function format_time($ts): string

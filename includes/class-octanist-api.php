@@ -8,8 +8,10 @@ class Octanist_Api
     const COOKIE_PREFIX     = 'octa_';
     const PIXEL_PATH        = '/p';
     const EVENT_PATH        = '/e';
+    const ASSIGN_PATH       = '/call-tracking/assign';
     const PIXEL_TIMEOUT     = 1;
     const COLLECT_TIMEOUT   = 1;
+    const ASSIGN_TIMEOUT    = 8;
     const FORM_TIMEOUT      = 10;
     const RETRY_TIMEOUT     = 3;
     const FORWARD_TIMEOUT   = 1;
@@ -143,6 +145,38 @@ class Octanist_Api
         }
 
         return $response;
+    }
+
+    /**
+     * Forward a DNI assignment request to the upstream /call-tracking/assign endpoint.
+     * Blocking: the pixel needs the leased number in the same request.
+     */
+    public static function forward_call_tracking_assignment(array $payload, array $signals = [])
+    {
+        $headers = [
+            'Content-Type' => 'application/json',
+        ];
+
+        if (!empty($signals['ip'])) {
+            $headers['X-Forwarded-For']           = $signals['ip'];
+            $headers['X-Octanist-Client-IP']      = $signals['ip'];
+        }
+        if (!empty($signals['country'])) {
+            $headers['X-Octanist-Client-Country'] = $signals['country'];
+        }
+        if (!empty($signals['ua'])) {
+            $headers['X-Octanist-Client-UA']      = $signals['ua'];
+        }
+
+        return wp_remote_post(OCTANIST_UPSTREAM . self::ASSIGN_PATH, [
+            'method'              => 'POST',
+            'timeout'             => self::ASSIGN_TIMEOUT,
+            'redirection'         => 0,
+            'blocking'            => true,
+            'headers'             => $headers,
+            'body'                => wp_json_encode($payload),
+            'limit_response_size' => 4096,
+        ]);
     }
 
     public static function pixel_delivery_is_paused(): bool

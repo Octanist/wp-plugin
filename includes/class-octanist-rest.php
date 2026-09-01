@@ -8,6 +8,7 @@ class Octanist_Rest
     const NAMESPACE  = 'oct';
     const PIXEL      = 'p';
     const COLLECT    = 'e';
+    const ASSIGN     = 'call-tracking/assign';
     const MAX_BODY   = 65536; // 64 KB
 
     public static function register(): void
@@ -26,6 +27,12 @@ class Octanist_Rest
         register_rest_route(self::NAMESPACE, '/' . self::COLLECT, [
             'methods'             => 'POST',
             'callback'            => [__CLASS__, 'collect'],
+            'permission_callback' => '__return_true',
+        ]);
+
+        register_rest_route(self::NAMESPACE, '/' . self::ASSIGN, [
+            'methods'             => 'POST',
+            'callback'            => [__CLASS__, 'assign'],
             'permission_callback' => '__return_true',
         ]);
     }
@@ -167,6 +174,50 @@ class Octanist_Rest
             'octanist_upstream;dur=' . number_format($upstream_duration, 1, '.', '')
         );
         return $rest_response;
+    }
+
+    public static function assign(WP_REST_Request $request)
+    {
+        $raw = $request->get_body();
+        if (strlen($raw) > self::MAX_BODY) {
+            return self::assignment_unavailable();
+        }
+
+        $payload = json_decode($raw, true);
+        if (!is_array($payload)) {
+            return new WP_REST_Response(null, 400);
+        }
+
+        $settings = Octanist_Settings::get();
+        if (!empty($settings['measurement_id']) && empty($payload['mid'])) {
+            $payload['mid'] = $settings['measurement_id'];
+        }
+
+        $signals = Octanist_Api::collect_client_signals();
+        $response = Octanist_Api::forward_call_tracking_assignment($payload, $signals);
+
+        if (is_wp_error($response)) {
+            return self::assignment_unavailable();
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        $body = json_decode((string) wp_remote_retrieve_body($response), true);
+        if (!is_array($body)) {
+            return self::assignment_unavailable();
+        }
+
+        return new WP_REST_Response($body, $code >= 200 && $code < 600 ? $code : 200);
+    }
+
+    private static function assignment_unavailable(): WP_REST_Response
+    {
+        return new WP_REST_Response([
+            'success'     => false,
+            'enabled'     => false,
+            'available'   => false,
+            'phoneNumber' => null,
+            'reason'      => 'assignment_unavailable',
+        ], 200);
     }
 
     private static function send_headers(array $headers): void

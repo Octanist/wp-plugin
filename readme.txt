@@ -2,8 +2,8 @@
 Contributors: octanist
 Tags: tracking, analytics, forms, leads, conversions
 Requires at least: 6.0
-Tested up to: 7.0
-Stable tag: 4.0.1
+Tested up to: 7.1
+Stable tag: 4.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +19,7 @@ The plugin acts as a first-party proxy for the Octanist pixel:
 
 *   **Pixel proxy.** The tracking script is served from your own WordPress site (`/wp-json/oct/p`) from a local cache and refreshed from Octanist in the background. No third-party domain, no DNS setup, no ad-blocker signal to match on.
 *   **Event proxy.** Events from the pixel POST to `/wp-json/oct/e`; the plugin forwards them immediately with a one-second upstream timeout so onboarding and live reporting stay responsive. Pixel failures are not persisted in WordPress, which prevents an upstream outage from filling the site database.
+*   **Call tracking proxy.** The pixel can request a dynamic number at `/wp-json/oct/call-tracking/assign`. The plugin forwards that request to Octanist so website phone numbers stay first-party.
 *   **Server-side form capture.** Form submissions from Gravity Forms, Contact Form 7, WPForms, Ninja Forms, Elementor Pro, Fluent Forms, Formidable Forms, Forminator, SureForms, and Divi Contact Form are captured server-side via action hooks and forwarded synchronously with a longer timeout. Confirmed failures are queued for retry.
 
 ### Setup
@@ -60,6 +61,12 @@ Via server-side action hooks on each supported plugin, not by intercepting the f
 Pixel events are forwarded immediately through the first-party WordPress endpoint and are not persisted locally when upstream is unavailable. Server-side form listeners wait for the upstream HTTP response. Failed form submissions are queued separately and retried with backoff through WP-Cron. A health panel in settings shows the last activity and queued form count.
 
 == Changelog ==
+
+= 4.1.0 =
+*   **NEW:** Optional call tracking setting (off by default). When enabled, the pixel can replace website phone numbers.
+*   **NEW:** First-party proxy for call tracking assignment (`POST /wp-json/oct/call-tracking/assign`).
+*   **NEW:** Setup codes can include a call tracking flag (`OCTA1.OCT-XXXXXXXX.s.a.t`).
+*   **COMPATIBILITY:** Tested up to WordPress 7.1.
 
 = 4.0.1 =
 *   **PERFORMANCE:** The pixel endpoint serves its local cache immediately and refreshes Octanist upstream in the background.

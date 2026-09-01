@@ -2,7 +2,7 @@
 Contributors: octanist
 Tags: tracking, analytics, forms, leads, conversions
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 4.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
@@ -66,6 +66,7 @@ Pixel events are forwarded immediately through the first-party WordPress endpoin
 *   **NEW:** Optional call tracking setting (off by default). When enabled, the pixel can replace website phone numbers.
 *   **NEW:** First-party proxy for call tracking assignment (`POST /wp-json/oct/call-tracking/assign`).
 *   **NEW:** Setup codes can include a call tracking flag (`OCTA1.OCT-XXXXXXXX.s.a.t`).
+*   **COMPATIBILITY:** Tested up to WordPress 7.1.
 
 = 4.0.1 =
 *   **PERFORMANCE:** The pixel endpoint serves its local cache immediately and refreshes Octanist upstream in the background.

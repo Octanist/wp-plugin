@@ -3,7 +3,7 @@
 **Contributors:** octanist
 **Tags:** tracking, analytics, forms, leads, conversions
 **Requires at least:** 6.0
-**Tested up to:** 7.0
+**Tested up to:** 7.1
 **Stable tag:** 4.1.0
 **License:** GPLv2 or later
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
@@ -52,6 +52,7 @@ Listener mode and consent mode are optional settings.
 - Added an optional Call tracking setting, off by default.
 - Added a first-party proxy for call tracking assignment (`POST /wp-json/oct/call-tracking/assign`).
 - Setup codes can include a call tracking flag (`OCTA1.OCT-XXXXXXXX.s.a.t`).
+- Tested up to WordPress 7.1.
 
 ### 4.0.1
 

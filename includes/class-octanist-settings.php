@@ -18,6 +18,8 @@ class Octanist_Settings
         add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
         add_action('admin_notices', [__CLASS__, 'maybe_render_upgrade_notice']);
         add_action('admin_post_octanist_dismiss_notice', [__CLASS__, 'dismiss_notice']);
+        add_action('update_option_' . self::OPTION, [__CLASS__, 'after_settings_update'], 10, 2);
+        add_action('add_option_' . self::OPTION, [__CLASS__, 'after_settings_add'], 10, 2);
     }
 
     public static function get(): array
@@ -149,8 +151,6 @@ class Octanist_Settings
 
         if ($mid === '') {
             add_settings_error(self::OPTION, 'octanist_mid_empty', __('Measurement ID is required for the pixel to load.', 'octanist'), 'warning');
-        } elseif (class_exists('Octanist_Queue')) {
-            Octanist_Queue::schedule_pixel_refresh();
         }
 
         return [
@@ -159,6 +159,39 @@ class Octanist_Settings
             'consent_mode'   => $consent,
             'call_tracking'  => !empty($input['call_tracking']),
         ];
+    }
+
+    public static function after_settings_add($option, $value): void
+    {
+        self::after_settings_update([], is_array($value) ? $value : []);
+    }
+
+    public static function after_settings_update($old_value, $value): void
+    {
+        if (!is_array($value) || empty($value['measurement_id'])) {
+            return;
+        }
+
+        if (Octanist_Api::pixel_cache_has_body(Octanist_Api::get_pixel_cache())) {
+            if (class_exists('Octanist_Queue')) {
+                Octanist_Queue::schedule_pixel_refresh(true);
+            }
+            return;
+        }
+
+        $result = Octanist_Api::refresh_pixel_cache();
+        if (is_wp_error($result)) {
+            add_settings_error(
+                self::OPTION,
+                'octanist_pixel_refresh_failed',
+                sprintf(
+                    /* translators: %s: error message from the pixel download */
+                    __('Settings saved, but the tracking script could not be downloaded: %s', 'octanist'),
+                    $result->get_error_message()
+                ),
+                'error'
+            );
+        }
     }
 
     private static function decode_setup_code(string $code)
@@ -305,10 +338,10 @@ class Octanist_Settings
         }
 
         $settings   = self::get();
+        $configured = self::is_configured();
         $health     = Octanist_Health::get();
         $queue_size = class_exists('Octanist_Queue') ? Octanist_Queue::count() : 0;
         $plugins    = class_exists('Octanist_Form_Capture') ? Octanist_Form_Capture::detected_plugins() : [];
-        $configured = self::is_configured();
         ?>
         <div class="wrap octanist-wrap" id="octanist-settings-page">
             <header class="octanist-header">
@@ -346,7 +379,7 @@ class Octanist_Settings
                                 autocomplete="off"
                                 spellcheck="false"
                                 aria-label="<?php esc_attr_e('Setup code', 'octanist'); ?>">
-                            <p class="octanist-help"><?php esc_html_e('The code is decoded inside WordPress. No request is sent to Octanist when you save it.', 'octanist'); ?></p>
+                            <p class="octanist-help"><?php esc_html_e('The setup code is decoded in WordPress. After save, WordPress downloads the tracking script from Octanist if it is not cached yet.', 'octanist'); ?></p>
                         </div>
                     </section>
                 <?php else : ?>
@@ -519,6 +552,10 @@ class Octanist_Settings
                             <dd><?php echo esc_html(self::format_detected_plugins($plugins)); ?></dd>
                         </div>
                         <div class="octanist-health__row">
+                            <dt><?php esc_html_e('Pixel cache', 'octanist'); ?></dt>
+                            <dd><?php echo esc_html(self::format_pixel_cache()); ?></dd>
+                        </div>
+                        <div class="octanist-health__row">
                             <dt><?php esc_html_e('Pixel route', 'octanist'); ?></dt>
                             <dd><code><?php echo esc_html(Octanist_Rest::pixel_url()); ?></code></dd>
                         </div>
@@ -581,6 +618,33 @@ class Octanist_Settings
         return !empty($enabled)
             ? __('The pixel can replace website phone numbers.', 'octanist')
             : __('Leave this off unless Octanist enabled call tracking for this site.', 'octanist');
+    }
+
+    private static function format_pixel_cache(): string
+    {
+        $cache = Octanist_Api::get_pixel_cache();
+        if (!Octanist_Api::pixel_cache_has_body($cache)) {
+            $health = Octanist_Health::get();
+            if (!empty($health['last_error_msg']) && ($health['last_form_source'] ?? '') === 'pixel_refresh') {
+                return sprintf(
+                    /* translators: %s: last pixel download error */
+                    __('Empty — %s', 'octanist'),
+                    (string) $health['last_error_msg']
+                );
+            }
+            return __('Empty — WordPress could not download the tracking script yet.', 'octanist');
+        }
+
+        $cached_at = isset($cache['cached_at']) ? (int) $cache['cached_at'] : 0;
+        if ($cached_at <= 0) {
+            return __('Ready', 'octanist');
+        }
+
+        return sprintf(
+            /* translators: %s: human-readable time diff */
+            __('Ready, updated %s ago', 'octanist'),
+            human_time_diff($cached_at, time())
+        );
     }
 
     private static function format_time($ts): string

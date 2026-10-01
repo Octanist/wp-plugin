@@ -32,6 +32,9 @@ class Octanist_Queue
         if (!wp_next_scheduled(self::CRON_HOOK)) {
             wp_schedule_event(time() + MINUTE_IN_SECONDS, 'hourly', self::CRON_HOOK);
         }
+        if (!self::has_recurring_event(self::PIXEL_REFRESH_HOOK)) {
+            wp_schedule_event(time() + 30, 'hourly', self::PIXEL_REFRESH_HOOK);
+        }
     }
 
     public static function unschedule(): void
@@ -141,30 +144,67 @@ class Octanist_Queue
         }
     }
 
-    public static function schedule_pixel_refresh(): void
+    public static function schedule_pixel_refresh(bool $spawn = false): void
     {
         if (get_transient(self::PIXEL_REFRESH_LOCK)) {
             return;
         }
 
         set_transient(self::PIXEL_REFRESH_LOCK, '1', MINUTE_IN_SECONDS);
-        if (!wp_next_scheduled(self::PIXEL_REFRESH_HOOK)) {
+
+        $next = wp_next_scheduled(self::PIXEL_REFRESH_HOOK);
+        if (!$next || $next > (time() + 15)) {
             wp_schedule_single_event(time() + 1, self::PIXEL_REFRESH_HOOK);
+        }
+
+        if ($spawn && self::can_spawn_cron()) {
+            spawn_cron();
         }
     }
 
     public static function refresh_pixel_cache(): void
     {
         delete_transient(self::PIXEL_REFRESH_LOCK);
+        Octanist_Api::refresh_pixel_cache();
+    }
 
-        $fresh = Octanist_Api::fetch_pixel();
-        if (is_wp_error($fresh)) {
-            Octanist_Health::record_failure($fresh->get_error_message(), 'pixel_refresh');
-            return;
+    private static function has_recurring_event(string $hook): bool
+    {
+        $crons = get_option('cron');
+        if (!is_array($crons)) {
+            return false;
         }
 
-        Octanist_Api::store_pixel_cache($fresh);
-        Octanist_Health::record_success('pixel_refresh');
+        foreach ($crons as $timestamp => $hooks) {
+            if ($timestamp === 'version' || !is_array($hooks) || !isset($hooks[$hook])) {
+                continue;
+            }
+            foreach ($hooks[$hook] as $event) {
+                if (!empty($event['schedule'])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static function can_spawn_cron(): bool
+    {
+        if (!function_exists('spawn_cron')) {
+            return false;
+        }
+        if (defined('WP_INSTALLING') && WP_INSTALLING) {
+            return false;
+        }
+        if (function_exists('wp_installing') && wp_installing()) {
+            return false;
+        }
+        if (isset($GLOBALS['pagenow']) && $GLOBALS['pagenow'] === 'plugins.php') {
+            return false;
+        }
+
+        return true;
     }
 
     private static function get_items(): array

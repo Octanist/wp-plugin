@@ -9,7 +9,7 @@ class Octanist_Api
     const PIXEL_PATH        = '/p';
     const EVENT_PATH        = '/e';
     const ASSIGN_PATH       = '/call-tracking/assign';
-    const PIXEL_TIMEOUT     = 1;
+    const PIXEL_TIMEOUT     = 8;
     const COLLECT_TIMEOUT   = 1;
     const ASSIGN_TIMEOUT    = 8;
     const FORM_TIMEOUT      = 10;
@@ -22,6 +22,11 @@ class Octanist_Api
     const PIXEL_CACHE_OPTION = 'octanist_pixel_js';
     const PIXEL_CACHE_LEGACY_KEY = 'octanist_pixel_js';
     const PIXEL_CACHE_TTL   = 5 * MINUTE_IN_SECONDS;
+    const PIXEL_MAX_BYTES = 524288;
+    const PIXEL_FETCH_FAIL_TRANSIENT = 'octanist_pixel_fetch_failed';
+    const PIXEL_FETCH_FAIL_COOLDOWN = 5 * MINUTE_IN_SECONDS;
+    const PIXEL_FETCH_LOCK = 'octanist_pixel_fetch_lock';
+    const PIXEL_FETCH_LOCK_TTL = 15;
 
     public static function collect_client_signals(): array
     {
@@ -207,13 +212,15 @@ class Octanist_Api
     }
 
     /**
-     * Fetch pixel.js from the Worker. Only background refresh jobs should call this.
+     * Fetch pixel.js from the Worker.
      * Returns ['body' => string, 'etag' => string, 'content_type' => string] or WP_Error.
      */
     public static function fetch_pixel()
     {
         $response = wp_remote_get(OCTANIST_UPSTREAM . self::PIXEL_PATH, [
-            'timeout' => self::PIXEL_TIMEOUT,
+            'timeout'             => self::PIXEL_TIMEOUT,
+            'redirection'         => 0,
+            'limit_response_size' => self::PIXEL_MAX_BYTES,
         ]);
 
         if (is_wp_error($response)) {
@@ -225,27 +232,90 @@ class Octanist_Api
             return new WP_Error('octanist_pixel_upstream', 'Pixel upstream returned HTTP ' . $code);
         }
 
+        $body         = (string) wp_remote_retrieve_body($response);
+        $content_type = (string) wp_remote_retrieve_header($response, 'content-type');
+        if (!self::pixel_response_is_valid($body, $content_type)) {
+            return new WP_Error('octanist_pixel_upstream', 'Pixel upstream returned an invalid script');
+        }
+
         return [
-            'body'         => wp_remote_retrieve_body($response),
+            'body'         => $body,
             'etag'         => wp_remote_retrieve_header($response, 'etag'),
-            'content_type' => wp_remote_retrieve_header($response, 'content-type') ?: 'application/javascript',
+            'content_type' => $content_type !== '' ? $content_type : 'application/javascript',
         ];
     }
 
     public static function get_pixel_cache(): array
     {
         $cache = get_option(self::PIXEL_CACHE_OPTION, []);
-        if (is_array($cache) && isset($cache['body'])) {
+        if (self::pixel_cache_has_body($cache)) {
             return $cache;
         }
 
         $legacy_cache = get_transient(self::PIXEL_CACHE_LEGACY_KEY);
-        if (is_array($legacy_cache) && isset($legacy_cache['body'])) {
+        if (self::pixel_cache_has_body($legacy_cache)) {
             update_option(self::PIXEL_CACHE_OPTION, $legacy_cache, false);
             return $legacy_cache;
         }
 
         return [];
+    }
+
+    public static function pixel_cache_has_body($cache): bool
+    {
+        return is_array($cache) && !empty($cache['body']) && is_string($cache['body']);
+    }
+
+    /**
+     * Download and persist the upstream pixel. Used by cron and admin retries.
+     *
+     * @return array|WP_Error Cache entry on success.
+     */
+    public static function refresh_pixel_cache(array $opts = [])
+    {
+        if (!empty($opts['respect_cooldown']) && get_transient(self::PIXEL_FETCH_FAIL_TRANSIENT)) {
+            return new WP_Error('octanist_pixel_cooldown', 'Pixel fetch is in cooldown');
+        }
+
+        if (!self::acquire_pixel_fetch_lock()) {
+            return new WP_Error('octanist_pixel_locked', 'Pixel fetch already in progress');
+        }
+
+        $fresh = self::fetch_pixel();
+        if (is_wp_error($fresh)) {
+            self::mark_pixel_fetch_failure($fresh->get_error_message());
+            self::release_pixel_fetch_lock();
+            return $fresh;
+        }
+
+        self::store_pixel_cache($fresh);
+        $cache = self::get_pixel_cache();
+        if (!self::pixel_cache_has_body($cache)) {
+            self::mark_pixel_fetch_failure('Pixel cache store produced an empty body');
+            self::release_pixel_fetch_lock();
+            return new WP_Error('octanist_pixel_store', 'Pixel cache store produced an empty body');
+        }
+
+        delete_transient(self::PIXEL_FETCH_FAIL_TRANSIENT);
+        Octanist_Health::record_success('pixel_refresh');
+        self::release_pixel_fetch_lock();
+
+        return $cache;
+    }
+
+    /**
+     * Fill an empty pixel cache immediately. Respects the failure cooldown and
+     * in-flight lock so visitor requests stay fast after a miss.
+     */
+    public static function warm_pixel_cache(): array
+    {
+        $cache = self::get_pixel_cache();
+        if (self::pixel_cache_has_body($cache)) {
+            return $cache;
+        }
+
+        $result = self::refresh_pixel_cache(['respect_cooldown' => true]);
+        return self::pixel_cache_has_body($result) ? $result : [];
     }
 
     public static function store_pixel_cache(array $fresh): void
@@ -270,6 +340,50 @@ class Octanist_Api
     {
         $cached_at = isset($cache['cached_at']) ? (int) $cache['cached_at'] : 0;
         return $cached_at > 0 && (time() - $cached_at) < self::PIXEL_CACHE_TTL;
+    }
+
+    private static function pixel_response_is_valid(string $body, string $content_type): bool
+    {
+        $trimmed = ltrim($body);
+        if ($trimmed === '') {
+            return false;
+        }
+
+        $head = strtolower(substr($trimmed, 0, 15));
+        if (strpos($head, '<!doctype') === 0 || strpos($head, '<html') === 0) {
+            return false;
+        }
+
+        if ($content_type === '') {
+            return true;
+        }
+
+        $type = strtolower($content_type);
+        return (
+            strpos($type, 'javascript') !== false
+            || strpos($type, 'ecmascript') !== false
+            || strpos($type, 'text/plain') !== false
+        );
+    }
+
+    private static function mark_pixel_fetch_failure(string $message): void
+    {
+        set_transient(self::PIXEL_FETCH_FAIL_TRANSIENT, '1', self::PIXEL_FETCH_FAIL_COOLDOWN);
+        Octanist_Health::record_failure($message, 'pixel_refresh');
+    }
+
+    private static function acquire_pixel_fetch_lock(): bool
+    {
+        if (get_transient(self::PIXEL_FETCH_LOCK)) {
+            return false;
+        }
+
+        return (bool) set_transient(self::PIXEL_FETCH_LOCK, '1', self::PIXEL_FETCH_LOCK_TTL);
+    }
+
+    private static function release_pixel_fetch_lock(): void
+    {
+        delete_transient(self::PIXEL_FETCH_LOCK);
     }
 
     private static function is_success_response($response): bool

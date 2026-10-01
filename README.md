@@ -4,7 +4,7 @@
 **Tags:** tracking, analytics, forms, leads, conversions
 **Requires at least:** 6.0
 **Tested up to:** 7.1
-**Stable tag:** 4.1.0
+**Stable tag:** 4.1.1
 **License:** GPLv2 or later
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,14 @@ Supported form plugins:
 Listener mode and consent mode are optional settings.
 
 ## Changelog
+
+### 4.1.1
+
+- The pixel endpoint now downloads the tracking script immediately when the local cache is empty, instead of waiting for WP-Cron.
+- Pixel downloads use an 8-second timeout so shared hosts can complete TLS and the script fetch.
+- The empty-cache stub is no longer publicly cacheable, so CDNs cannot pin the warming comment.
+- Failed or invalid upstream responses enter a cooldown and in-flight lock so visitor requests do not stampede.
+- Settings save no longer blocks sanitization on a remote request; an empty cache is filled after the option is stored.
 
 ### 4.1.0
 

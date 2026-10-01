@@ -2,7 +2,7 @@
 /**
  * Plugin Name:         Octanist
  * Description:         First-party proxy for the Octanist pixel. Serves the tracking script, forwards events and call-tracking assignments, and captures form submissions server-side from popular form plugins.
- * Version:             4.1.0
+ * Version:             4.1.1
  * Author:              Octanist
  * Author URI:          https://www.octanist.com/
  * Text Domain:         octanist
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-define('OCTANIST_VERSION', '4.1.0');
+define('OCTANIST_VERSION', '4.1.1');
 define('OCTANIST_PATH', plugin_dir_path(__FILE__));
 define('OCTANIST_URL', plugin_dir_url(__FILE__));
 define('OCTANIST_FILE', __FILE__);
@@ -51,7 +51,7 @@ function octanist_activate()
     if (class_exists('Octanist_Queue')) {
         Octanist_Queue::schedule();
         if (Octanist_Settings::is_configured()) {
-            Octanist_Queue::schedule_pixel_refresh();
+            Octanist_Queue::schedule_pixel_refresh(false);
         }
     }
 }

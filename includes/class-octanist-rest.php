@@ -55,8 +55,11 @@ class Octanist_Rest
         }
 
         $cache = Octanist_Api::get_pixel_cache();
+        if (!Octanist_Api::pixel_cache_has_body($cache)) {
+            $cache = Octanist_Api::warm_pixel_cache();
+        }
 
-        if (is_array($cache) && isset($cache['body'])) {
+        if (Octanist_Api::pixel_cache_has_body($cache)) {
             $is_fresh = Octanist_Api::pixel_cache_is_fresh($cache);
             if (!$is_fresh && class_exists('Octanist_Queue')) {
                 Octanist_Queue::schedule_pixel_refresh();
@@ -121,7 +124,7 @@ class Octanist_Rest
     {
         self::send_headers([
             'Content-Type'  => 'application/javascript',
-            'Cache-Control' => 'public, max-age=30',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
         ]);
         echo "/* Octanist: pixel cache warming */\n";
         exit;

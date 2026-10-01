@@ -3,7 +3,7 @@ Contributors: octanist
 Tags: tracking, analytics, forms, leads, conversions
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 4.1.0
+Stable tag: 4.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,13 @@ Via server-side action hooks on each supported plugin, not by intercepting the f
 Pixel events are forwarded immediately through the first-party WordPress endpoint and are not persisted locally when upstream is unavailable. Server-side form listeners wait for the upstream HTTP response. Failed form submissions are queued separately and retried with backoff through WP-Cron. A health panel in settings shows the last activity and queued form count.
 
 == Changelog ==
+
+= 4.1.1 =
+*   **FIX:** The pixel endpoint downloads the tracking script immediately when the local cache is empty, instead of waiting for WP-Cron.
+*   **FIX:** Pixel downloads use an 8-second timeout so shared hosts can complete TLS and the script fetch.
+*   **FIX:** The empty-cache stub is no longer publicly cacheable, so CDNs cannot pin the warming comment.
+*   **FIX:** Failed or invalid upstream responses enter a cooldown and in-flight lock so visitor requests do not stampede.
+*   **FIX:** Settings save no longer blocks sanitization on a remote request; an empty cache is filled after the option is stored.
 
 = 4.1.0 =
 *   **NEW:** Optional call tracking setting (off by default). When enabled, the pixel can replace website phone numbers.

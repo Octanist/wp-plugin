@@ -15,6 +15,8 @@ delete_option('octanist_show_v3_notice');
 delete_transient('octanist_pixel_js');
 delete_transient('octanist_pixel_refresh_pending');
 delete_transient('octanist_pixel_delivery_paused');
+delete_transient('octanist_pixel_fetch_failed');
+delete_transient('octanist_pixel_fetch_lock');
 
 $timestamp = wp_next_scheduled('octanist_retry_event_queue');
 while ($timestamp) {

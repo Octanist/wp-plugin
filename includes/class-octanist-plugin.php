@@ -39,7 +39,7 @@ class Octanist_Plugin
         Octanist_Api::get_pixel_cache();
 
         if (Octanist_Settings::is_configured()) {
-            Octanist_Queue::schedule_pixel_refresh();
+            Octanist_Queue::schedule_pixel_refresh(false);
         }
 
         update_option('octanist_version', OCTANIST_VERSION);

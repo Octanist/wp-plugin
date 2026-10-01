@@ -83,7 +83,10 @@ class Octanist_Form_Capture
         ];
 
         if (!empty($_COOKIE['octa_cid']) && is_string($_COOKIE['octa_cid'])) {
-            $payload['cid'] = sanitize_text_field(wp_unslash($_COOKIE['octa_cid']));
+            $cid = self::clean_id($_COOKIE['octa_cid']);
+            if ($cid !== null) {
+                $payload['cid'] = $cid;
+            }
         }
 
         return $payload;
@@ -391,9 +394,21 @@ class Octanist_Form_Capture
 
     private static function clean_sid(string $sid): ?string
     {
-        $sid = sanitize_text_field(wp_unslash($sid));
-        $sid = trim($sid);
-        return $sid === '' ? null : $sid;
+        return self::clean_id($sid);
+    }
+
+    /**
+     * Session and client ids from the pixel are UUIDs. They arrive from anyone who submits
+     * a form, so anything that is not a short plain id is dropped here, before
+     * sanitize_text_field, which slows down sharply on long crafted input.
+     */
+    private static function clean_id(string $value): ?string
+    {
+        $value = trim(wp_unslash($value));
+        if ($value === '' || strlen($value) > 128 || !preg_match('/^[A-Za-z0-9._-]+$/', $value)) {
+            return null;
+        }
+        return $value;
     }
 
     public static function drop_sensitive_keys(array $fields): array

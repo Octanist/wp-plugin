@@ -18,6 +18,8 @@ class Octanist_Settings
         add_action('admin_enqueue_scripts', [__CLASS__, 'enqueue_assets']);
         add_action('admin_notices', [__CLASS__, 'maybe_render_upgrade_notice']);
         add_action('admin_post_octanist_dismiss_notice', [__CLASS__, 'dismiss_notice']);
+        add_action('update_option_' . self::OPTION, [__CLASS__, 'after_settings_update'], 10, 2);
+        add_action('add_option_' . self::OPTION, [__CLASS__, 'after_settings_add'], 10, 2);
     }
 
     public static function get(): array
@@ -26,6 +28,7 @@ class Octanist_Settings
             'measurement_id' => '',
             'listener_mode'  => 'server',
             'consent_mode'   => 'auto',
+            'call_tracking'  => false,
         ];
         $settings = get_option(self::OPTION, []);
         if (!is_array($settings)) {
@@ -52,6 +55,9 @@ class Octanist_Settings
             'data-consent-mode' => $s['consent_mode'],
             'data-cookie-mode'  => 'server',
         ];
+        if (!empty($s['call_tracking'])) {
+            $attrs['data-call-tracking'] = 'true';
+        }
         if ($s['listener_mode'] === 'client') {
             // Value-less attribute, browser pixel binds to forms itself.
             $attrs['data-forms'] = '';
@@ -92,6 +98,7 @@ class Octanist_Settings
                 'measurement_id' => '',
                 'listener_mode'  => 'server',
                 'consent_mode'   => 'auto',
+                'call_tracking'  => false,
             ],
         ]);
     }
@@ -116,6 +123,9 @@ class Octanist_Settings
                 $input['measurement_id'] = $decoded['measurement_id'];
                 $input['listener_mode']  = $decoded['listener_mode'];
                 $input['consent_mode']   = $decoded['consent_mode'];
+                if (array_key_exists('call_tracking', $decoded)) {
+                    $input['call_tracking'] = $decoded['call_tracking'];
+                }
 
                 add_settings_error(
                     self::OPTION,
@@ -141,15 +151,47 @@ class Octanist_Settings
 
         if ($mid === '') {
             add_settings_error(self::OPTION, 'octanist_mid_empty', __('Measurement ID is required for the pixel to load.', 'octanist'), 'warning');
-        } elseif (class_exists('Octanist_Queue')) {
-            Octanist_Queue::schedule_pixel_refresh();
         }
 
         return [
             'measurement_id' => $mid,
             'listener_mode'  => $listener,
             'consent_mode'   => $consent,
+            'call_tracking'  => !empty($input['call_tracking']),
         ];
+    }
+
+    public static function after_settings_add($option, $value): void
+    {
+        self::after_settings_update([], is_array($value) ? $value : []);
+    }
+
+    public static function after_settings_update($old_value, $value): void
+    {
+        if (!is_array($value) || empty($value['measurement_id'])) {
+            return;
+        }
+
+        if (Octanist_Api::pixel_cache_has_body(Octanist_Api::get_pixel_cache())) {
+            if (class_exists('Octanist_Queue')) {
+                Octanist_Queue::schedule_pixel_refresh(true);
+            }
+            return;
+        }
+
+        $result = Octanist_Api::refresh_pixel_cache();
+        if (is_wp_error($result)) {
+            add_settings_error(
+                self::OPTION,
+                'octanist_pixel_refresh_failed',
+                sprintf(
+                    /* translators: %s: error message from the pixel download */
+                    __('Settings saved, but the tracking script could not be downloaded: %s', 'octanist'),
+                    $result->get_error_message()
+                ),
+                'error'
+            );
+        }
     }
 
     private static function decode_setup_code(string $code)
@@ -166,7 +208,7 @@ class Octanist_Settings
         }
 
         $parts = explode('.', $code);
-        if (count($parts) !== 4) {
+        if (count($parts) !== 4 && count($parts) !== 5) {
             return new WP_Error(
                 'octanist_setup_code_shape',
                 __('Setup code should look like OCTA1.OCT-XXXXXXXX.s.a.', 'octanist')
@@ -211,11 +253,24 @@ class Octanist_Settings
             );
         }
 
-        return [
+        $decoded = [
             'measurement_id' => $measurement_id,
             'listener_mode'  => $listener_mode,
             'consent_mode'   => $consent_mode,
         ];
+
+        if (isset($parts[4])) {
+            $call_code = sanitize_key((string) $parts[4]);
+            if (!in_array($call_code, ['t', 'n'], true)) {
+                return new WP_Error(
+                    'octanist_setup_code_call_tracking',
+                    __('Setup code contains an invalid call tracking flag.', 'octanist')
+                );
+            }
+            $decoded['call_tracking'] = $call_code === 't';
+        }
+
+        return $decoded;
     }
 
     public static function enqueue_assets($hook): void
@@ -283,10 +338,10 @@ class Octanist_Settings
         }
 
         $settings   = self::get();
+        $configured = self::is_configured();
         $health     = Octanist_Health::get();
         $queue_size = class_exists('Octanist_Queue') ? Octanist_Queue::count() : 0;
         $plugins    = class_exists('Octanist_Form_Capture') ? Octanist_Form_Capture::detected_plugins() : [];
-        $configured = self::is_configured();
         ?>
         <div class="wrap octanist-wrap" id="octanist-settings-page">
             <header class="octanist-header">
@@ -324,7 +379,7 @@ class Octanist_Settings
                                 autocomplete="off"
                                 spellcheck="false"
                                 aria-label="<?php esc_attr_e('Setup code', 'octanist'); ?>">
-                            <p class="octanist-help"><?php esc_html_e('The code is decoded inside WordPress. No request is sent to Octanist when you save it.', 'octanist'); ?></p>
+                            <p class="octanist-help"><?php esc_html_e('The setup code is decoded in WordPress. After save, WordPress downloads the tracking script from Octanist if it is not cached yet.', 'octanist'); ?></p>
                         </div>
                     </section>
                 <?php else : ?>
@@ -361,6 +416,11 @@ class Octanist_Settings
                                         <dt><?php esc_html_e('Consent mode', 'octanist'); ?></dt>
                                         <dd><?php echo esc_html(self::format_consent_mode($settings['consent_mode'])); ?></dd>
                                         <span><?php echo esc_html(self::format_consent_mode_help($settings['consent_mode'])); ?></span>
+                                    </div>
+                                    <div class="octanist-summary-tile">
+                                        <dt><?php esc_html_e('Call tracking', 'octanist'); ?></dt>
+                                        <dd><?php echo esc_html(self::format_call_tracking($settings['call_tracking'])); ?></dd>
+                                        <span><?php echo esc_html(self::format_call_tracking_help($settings['call_tracking'])); ?></span>
                                     </div>
                                 </dl>
                             </div>
@@ -413,6 +473,18 @@ class Octanist_Settings
                                                 <option value="denied" <?php selected($settings['consent_mode'], 'denied'); ?>><?php esc_html_e('Denied, always off', 'octanist'); ?></option>
                                             </select>
                                         </label>
+
+                                        <div class="octanist-field">
+                                            <span class="octanist-field__label"><?php esc_html_e('Call tracking', 'octanist'); ?></span>
+                                            <input type="hidden" name="<?php echo esc_attr(self::OPTION); ?>[call_tracking]" value="0">
+                                            <label class="octanist-option <?php echo !empty($settings['call_tracking']) ? 'is-active' : ''; ?>">
+                                                <input type="checkbox" name="<?php echo esc_attr(self::OPTION); ?>[call_tracking]" value="1" <?php checked(!empty($settings['call_tracking'])); ?>>
+                                                <span class="octanist-option__content">
+                                                    <span class="octanist-option__title"><?php esc_html_e('Replace website phone numbers', 'octanist'); ?></span>
+                                                    <span class="octanist-option__desc"><?php esc_html_e('Turn this on after Octanist has enabled call tracking for this site.', 'octanist'); ?></span>
+                                                </span>
+                                            </label>
+                                        </div>
                                     </div>
                                 </details>
 
@@ -428,7 +500,7 @@ class Octanist_Settings
                                             autocomplete="off"
                                             spellcheck="false"
                                             aria-label="<?php esc_attr_e('Setup code', 'octanist'); ?>">
-                                        <p class="octanist-help"><?php esc_html_e('Saving a setup code replaces the current measurement ID, form capture mode, and consent mode.', 'octanist'); ?></p>
+                                        <p class="octanist-help"><?php esc_html_e('Saving a setup code replaces the current measurement ID, form capture mode, consent mode, and call tracking setting when the code includes that flag.', 'octanist'); ?></p>
                                     </div>
                                 </details>
                             </div>
@@ -480,6 +552,10 @@ class Octanist_Settings
                             <dd><?php echo esc_html(self::format_detected_plugins($plugins)); ?></dd>
                         </div>
                         <div class="octanist-health__row">
+                            <dt><?php esc_html_e('Pixel cache', 'octanist'); ?></dt>
+                            <dd><?php echo esc_html(self::format_pixel_cache()); ?></dd>
+                        </div>
+                        <div class="octanist-health__row">
                             <dt><?php esc_html_e('Pixel route', 'octanist'); ?></dt>
                             <dd><code><?php echo esc_html(Octanist_Rest::pixel_url()); ?></code></dd>
                         </div>
@@ -528,6 +604,47 @@ class Octanist_Settings
         ];
 
         return $labels[$mode] ?? $labels['auto'];
+    }
+
+    private static function format_call_tracking($enabled): string
+    {
+        return !empty($enabled)
+            ? __('On', 'octanist')
+            : __('Off', 'octanist');
+    }
+
+    private static function format_call_tracking_help($enabled): string
+    {
+        return !empty($enabled)
+            ? __('The pixel can replace website phone numbers.', 'octanist')
+            : __('Leave this off unless Octanist enabled call tracking for this site.', 'octanist');
+    }
+
+    private static function format_pixel_cache(): string
+    {
+        $cache = Octanist_Api::get_pixel_cache();
+        if (!Octanist_Api::pixel_cache_has_body($cache)) {
+            $health = Octanist_Health::get();
+            if (!empty($health['last_error_msg']) && ($health['last_form_source'] ?? '') === 'pixel_refresh') {
+                return sprintf(
+                    /* translators: %s: last pixel download error */
+                    __('Empty — %s', 'octanist'),
+                    (string) $health['last_error_msg']
+                );
+            }
+            return __('Empty — WordPress could not download the tracking script yet.', 'octanist');
+        }
+
+        $cached_at = isset($cache['cached_at']) ? (int) $cache['cached_at'] : 0;
+        if ($cached_at <= 0) {
+            return __('Ready', 'octanist');
+        }
+
+        return sprintf(
+            /* translators: %s: human-readable time diff */
+            __('Ready, updated %s ago', 'octanist'),
+            human_time_diff($cached_at, time())
+        );
     }
 
     private static function format_time($ts): string

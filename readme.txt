@@ -3,7 +3,7 @@ Contributors: octanist
 Tags: tracking, analytics, forms, leads, conversions
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 4.1.1
+Stable tag: 4.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -61,6 +61,9 @@ Via server-side action hooks on each supported plugin, not by intercepting the f
 Pixel events are forwarded immediately through the first-party WordPress endpoint and are not persisted locally when upstream is unavailable. Server-side form listeners wait for the upstream HTTP response. Failed form submissions are queued separately and retried with backoff through WP-Cron. A health panel in settings shows the last activity and queued form count.
 
 == Changelog ==
+
+= 4.1.2 =
+*   **FIX:** Form capture accepts only valid Octanist session and client IDs, so oversized values sent with a form submission can no longer slow down the site.
 
 = 4.1.1 =
 *   **FIX:** The pixel endpoint downloads the tracking script immediately when the local cache is empty, instead of waiting for WP-Cron.

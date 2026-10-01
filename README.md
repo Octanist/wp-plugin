@@ -4,7 +4,7 @@
 **Tags:** tracking, analytics, forms, leads, conversions
 **Requires at least:** 6.0
 **Tested up to:** 7.1
-**Stable tag:** 4.1.1
+**Stable tag:** 4.1.2
 **License:** GPLv2 or later
 **License URI:** https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -46,6 +46,10 @@ Supported form plugins:
 Listener mode and consent mode are optional settings.
 
 ## Changelog
+
+### 4.1.2
+
+- Form capture accepts only valid Octanist session and client IDs, so oversized values sent with a form submission can no longer slow down the site.
 
 ### 4.1.1
 

@@ -68,5 +68,6 @@ class Octanist_Plugin
         require_once $forms . 'class-octanist-form-forminator.php';
         require_once $forms . 'class-octanist-form-sureforms.php';
         require_once $forms . 'class-octanist-form-divi.php';
+        require_once $forms . 'class-octanist-form-custom.php';
     }
 }

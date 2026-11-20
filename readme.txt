@@ -3,7 +3,7 @@ Contributors: octanist
 Tags: tracking, analytics, forms, leads, conversions
 Requires at least: 6.0
 Tested up to: 7.1
-Stable tag: 4.1.2
+Stable tag: 4.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -21,6 +21,7 @@ The plugin acts as a first-party proxy for the Octanist pixel:
 *   **Event proxy.** Events from the pixel POST to `/wp-json/oct/e`; the plugin forwards them immediately with a one-second upstream timeout so onboarding and live reporting stay responsive. Pixel failures are not persisted in WordPress, which prevents an upstream outage from filling the site database.
 *   **Call tracking proxy.** The pixel can request a dynamic number at `/wp-json/oct/call-tracking/assign`. The plugin forwards that request to Octanist so website phone numbers stay first-party.
 *   **Server-side form capture.** Form submissions from Gravity Forms, Contact Form 7, WPForms, Ninja Forms, Elementor Pro, Fluent Forms, Formidable Forms, Forminator, SureForms, and Divi Contact Form are captured server-side via action hooks and forwarded synchronously with a longer timeout. Confirmed failures are queued for retry.
+*   **Custom forms.** Forms built in your own theme or plugin code can be sent with one line: `do_action( 'octanist_track_form', 'form_name', $fields );`.
 
 ### Setup
 
@@ -50,7 +51,15 @@ No. The plugin proxies the pixel through your WordPress site itself, so everythi
 
 = Which form plugins are supported? =
 
-Gravity Forms, Contact Form 7, WPForms, Ninja Forms, Elementor Pro Forms, Fluent Forms, Formidable Forms, Forminator, SureForms, and Divi Contact Form.
+Gravity Forms, Contact Form 7, WPForms, Ninja Forms, Elementor Pro Forms, Fluent Forms, Formidable Forms, Forminator, SureForms, and Divi Contact Form. Custom-coded forms can be sent with the `octanist_track_form` action, see below.
+
+= How do I send a custom-coded form? =
+
+Call the `octanist_track_form` action in the code that handles the submission, once the submission is accepted:
+
+`do_action( 'octanist_track_form', 'whitepaper_download', array( 'name' => $name, 'email' => $email ) );`
+
+The first argument is the name the form gets in Octanist, the second the submitted fields. The plugin reads the Octanist session from the same request, so leads keep their attribution. Call it while handling the visitor's request, not from a background job. The action only sends in server-side listener mode; in browser mode the pixel captures the form itself.
 
 = How are form submissions captured? =
 
@@ -61,6 +70,9 @@ Via server-side action hooks on each supported plugin, not by intercepting the f
 Pixel events are forwarded immediately through the first-party WordPress endpoint and are not persisted locally when upstream is unavailable. Server-side form listeners wait for the upstream HTTP response. Failed form submissions are queued separately and retried with backoff through WP-Cron. A health panel in settings shows the last activity and queued form count.
 
 == Changelog ==
+
+= 4.2.0 =
+*   **NEW:** `octanist_track_form` action to send custom-coded forms to Octanist from your own PHP code, with the Octanist session read from the same request.
 
 = 4.1.2 =
 *   **FIX:** Form capture accepts only valid Octanist session and client IDs, so oversized values sent with a form submission can no longer slow down the site.

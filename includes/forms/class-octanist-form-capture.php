@@ -10,6 +10,10 @@ class Octanist_Form_Capture
     public static function register(): void
     {
         add_action('init', [__CLASS__, 'register_handlers'], 20);
+
+        // Not tied to a form plugin, so it listens from the start and checks the
+        // settings when it is called. Custom form code can run before init.
+        Octanist_Form_Custom::register();
     }
 
     public static function register_handlers(): void

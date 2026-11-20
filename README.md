@@ -22,6 +22,7 @@ The plugin acts as a first-party proxy for the Octanist pixel:
 - **Event proxy:** Events from the pixel POST to `/wp-json/oct/e`; the plugin forwards them immediately with a one-second upstream timeout so onboarding and live reporting stay responsive. Pixel failures are not persisted in WordPress, which prevents an upstream outage from filling the site database.
 - **Call tracking proxy:** The pixel can request a dynamic number at `/wp-json/oct/call-tracking/assign`. The plugin forwards that request to Octanist so website numbers stay first-party.
 - **Server-side form capture:** Form submissions from supported plugins are captured via server-side action hooks and forwarded synchronously with a longer timeout. Confirmed failures are queued for retry.
+- **Custom forms:** Forms built in your own theme or plugin code are sent with the `octanist_track_form` action.
 
 Supported form plugins:
 
@@ -45,7 +46,28 @@ Supported form plugins:
 
 Listener mode and consent mode are optional settings.
 
+## Custom forms
+
+For a form that none of the supported plugins handle, call the `octanist_track_form` action in the code that processes the submission, once it is accepted:
+
+```php
+do_action('octanist_track_form', 'whitepaper_download', [
+    'name'  => sanitize_text_field(wp_unslash($_POST['name'] ?? '')),
+    'email' => sanitize_email(wp_unslash($_POST['email'] ?? '')),
+]);
+```
+
+- **Form name:** the name the form gets in Octanist. Keep it stable; a new name shows up as a new form to map.
+- **Fields:** field name => submitted value. Keys starting with `_` and sensitive keys (passwords, nonces, card numbers) are dropped.
+- **Session:** read from the same request, so leads keep their attribution: the `octa_sid` field the pixel adds to every form, or the `X-Octanist-Session-Id` header it adds to same-origin AJAX calls. Call the action while handling the visitor's request, not from a background job, which would send the server's IP and user agent instead of the visitor's.
+
+The action only sends in server-side listener mode. In browser mode the pixel captures the form itself. When the plugin is inactive the action does nothing, so the call is safe to leave in place.
+
 ## Changelog
+
+### 4.2.0
+
+- New `octanist_track_form` action to send custom-coded forms to Octanist from your own PHP code, with the Octanist session read from the same request.
 
 ### 4.1.2
 
